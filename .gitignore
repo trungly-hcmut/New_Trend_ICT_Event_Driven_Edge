@@ -1,0 +1,7 @@
+# dàn bài nội bộ — không công khai
+*.docx
+~$*.docx
+
+# macOS / editor
+.DS_Store
+.vscode/

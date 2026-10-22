@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Từ Batch đến Real-time · Event-driven, Serverless &amp; Edge</title>
+<meta name="description" content="Seminar Những xu hướng mới trong CNTT — Data pipeline hướng sự kiện với Serverless &amp; Edge Computing. Slide song ngữ VI/EN.">
+<meta name="theme-color" content="#060a13">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060a13'/%3E%3Cpath d='M5 16h7l3-7 4 14 3-7h5' fill='none' stroke='%2322d3ee' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/deck.css">
+<script>
+  // apply saved language / theme / view before first paint
+  (function () {
+    try {
+      var p = new URLSearchParams(location.search), d = document.documentElement;
+      var l = p.get('lang') || localStorage.getItem('edge:lang');
+      if (l === 'vi' || l === 'en') d.lang = l;
+      var t = p.get('theme') || localStorage.getItem('edge:theme');
+      if (t === 'dark' || t === 'light') d.dataset.theme = t;
+      var m = localStorage.getItem('edge:mode');
+      if (m === 'doc' || (!m && matchMedia('screen and (max-width: 860px)').matches)) d.classList.add('doc-mode');
+      if (p.has('static')) d.classList.add('static');
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<!-- shared arrowheads for inline diagrams -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--line-2)"/></marker>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--ink-2)"/></marker>
+    <marker id="ah-c2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--c2)"/></marker>
+    <marker id="ah-c3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--c3)"/></marker>
+    <marker id="ah-bad" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--bad)"/></marker>
+    <marker id="ah-good" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--good)"/></marker>
+  </defs>
+</svg>
+
+<div class="viewport" id="viewport">
+<main class="stage" id="stage">
+
+<!-- =====================================================
+     TITLE
+     ===================================================== -->
+<section class="slide slide-title" data-ch="0" id="home" data-toc-vi="Trang bìa" data-toc-en="Title">
+  <div class="title-art" id="title-art"></div>
+  <div class="title-wrap">
+    <div class="kicker"><span class="vi">Seminar · Những xu hướng mới trong CNTT</span><span class="en">Seminar · New Trends in IT</span></div>
+    <h1><span class="vi">Từ Batch đến <em>Real-time</em></span><span class="en">From Batch to <em>Real-time</em></span></h1>
+    <p class="sub"><span class="vi">Data pipeline hướng sự kiện với Serverless &amp; Edge Computing</span><span class="en">Event-driven data pipelines with Serverless &amp; Edge Computing</span></p>
+    <p class="lede">
+      <span class="vi">“Dữ liệu có hạn sử dụng. Giá trị của một sự kiện giảm dần theo từng giây trôi qua, nên xu hướng là xử lý nó ngay tại nơi và lúc nó phát sinh. Nhưng real-time và edge không phải viên đạn bạc.”</span>
+      <span class="en">“Data has an expiry date. An event loses value with every second that passes, so the trend is to process it where and when it happens. But real-time and edge are not a silver bullet.”</span>
+    </p>
+    <div class="team">
+      <div class="member"><span class="av" style="background:var(--c1)">MH</span><b>Bùi Minh Hiếu</b></div>
+      <div class="member"><span class="av" style="background:var(--c2)">LK</span><b>Ngô Lê Khoa</b></div>
+      <div class="member"><span class="av" style="background:var(--c3)">MT</span><b>Lý Minh Trung</b></div>
+    </div>
+    <div class="cta">
+      <button class="btn primary" data-go="next"><span class="vi">Bắt đầu trình bày</span><span class="en">Start presentation</span> →</button>
+      <button class="btn" data-act="toc"><span class="vi">Mục lục</span><span class="en">Contents</span></button>
+      <div class="lang" role="group" aria-label="Language"><button data-act="lang" data-lang="vi" aria-pressed="true">VI</button><button data-act="lang" data-lang="en" aria-pressed="false">EN</button></div>
+    </div>
+    <p class="hint">
+      <kbd>←</kbd> <kbd>→</kbd> <kbd>Space</kbd> <span class="vi">chuyển slide</span><span class="en">navigate</span> ·
+      <kbd>N</kbd> <span class="vi">ghi chú</span><span class="en">notes</span> ·
+      <kbd>L</kbd> VI/EN ·
+      <kbd>T</kbd> <span class="vi">giao diện</span><span class="en">theme</span> ·
+      <kbd>M</kbd> <span class="vi">mục lục</span><span class="en">contents</span> ·
+      <kbd>F</kbd> <span class="vi">toàn màn hình</span><span class="en">fullscreen</span>
+    </p>
+  </div>
+  <aside class="notes">
+    <p class="vi">Giới thiệu đề tài, môn học và các thành viên. Gợi mở bằng thông điệp xuyên suốt: dữ liệu có hạn sử dụng — giá trị của một sự kiện giảm dần theo từng giây, nên xu hướng là xử lý ngay tại nơi và lúc nó phát sinh. Nhưng chúng ta cũng sẽ thấy real-time và edge không phải viên đạn bạc.</p>
+    <p class="en">Introduce the topic, the course and the team. Open with the thread that runs through the talk: data has an expiry date — an event loses value every second, so the trend is to process it where and when it happens. We will also see that real-time and edge are not a silver bullet.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     AGENDA
+     ===================================================== -->
+<section class="slide" data-ch="0" data-sec="agenda" id="agenda">
+  <h2><span class="vi">Năm câu hỏi dẫn dắt bài trình bày</span><span class="en">Five questions that drive the talk</span></h2>
+  <div class="s-body" style="display:flex;flex-direction:column;justify-content:center;gap:0">
+    <div class="agenda">
+      <button class="ag rise" style="--i:0;--c:var(--c1)" data-go="#ch1">
+        <span class="no">Q1</span>
+        <h3><span class="vi">Vì sao phải nhanh?</span><span class="en">Why so fast?</span></h3>
+        <p><span class="vi">Thanh toán và lừa đảo ở Việt Nam, Thái Lan; giới hạn của batch và kiến trúc Lambda.</span><span class="en">Payments and fraud in Vietnam and Thailand; the limits of batch and the Lambda architecture.</span></p>
+        <span class="rng">slide 4–5</span>
+      </button>
+      <button class="ag rise" style="--i:1;--c:var(--c2)" data-go="#ch2">
+        <span class="no">Q2</span>
+        <h3><span class="vi">Làm thế nào?</span><span class="en">How does it work?</span></h3>
+        <p><span class="vi">Event-driven, serverless, edge, các con số và kiến trúc pipeline 5 tầng.</span><span class="en">Event-driven, serverless, edge, the numbers and a 5-layer pipeline.</span></p>
+        <span class="rng">slide 7–12</span>
+      </button>
+      <button class="ag rise" style="--i:2;--c:var(--c3)" data-go="#ch3">
+        <span class="no">Q3</span>
+        <h3><span class="vi">Ai đang làm?</span><span class="en">Who is doing it?</span></h3>
+        <p><span class="vi">Uber định giá real-time, Grab tự phục vụ, ngân hàng Krungsri chặn lừa đảo.</span><span class="en">Uber's real-time pricing, Grab's self-service platform, Krungsri bank stopping fraud.</span></p>
+        <span class="rng">slide 14–16</span>
+      </button>
+      <button class="ag rise" style="--i:3;--c:var(--c4)" data-go="#ch4">
+        <span class="no">Q4</span>
+        <h3><span class="vi">Khi nào KHÔNG nên?</span><span class="en">When NOT to?</span></h3>
+        <p><span class="vi">Prime Video, Vercel và các giới hạn kỹ thuật cụ thể.</span><span class="en">Prime Video, Vercel and concrete engineering limits.</span></p>
+        <span class="rng">slide 18–20</span>
+      </button>
+      <button class="ag rise" style="--i:4;--c:var(--c5)" data-go="#ch5">
+        <span class="no">Q5</span>
+        <h3><span class="vi">Đi về đâu?</span><span class="en">Where is it heading?</span></h3>
+        <p><span class="vi">Dòng thời gian từ batch đến real-time và 7 xu hướng 2025–2026.</span><span class="en">A timeline from batch to real-time and 7 trends for 2025–2026.</span></p>
+        <span class="rng">slide 22–23</span>
+      </button>
+    </div>
+    <div class="crumbs rise" style="--i:6">
+      <span class="vi chips" style="gap:6px 8px;align-items:center"><span class="chip">Vấn đề</span>→<span class="chip">Khái niệm</span>→<span class="chip">Vì sao là xu hướng</span>→<span class="chip">Edge hoạt động thế nào</span>→<span class="chip">Kiến trúc</span>→<span class="chip">Case study</span>→<span class="chip">Mặt trái</span>→<span class="chip">Xu hướng 2025–2026</span>→<span class="chip">Kết luận</span></span>
+      <span class="en chips" style="gap:6px 8px;align-items:center"><span class="chip">Problem</span>→<span class="chip">Concepts</span>→<span class="chip">Why it is a trend</span>→<span class="chip">How the edge works</span>→<span class="chip">Architecture</span>→<span class="chip">Case studies</span>→<span class="chip">Downsides</span>→<span class="chip">Trends 2025–2026</span>→<span class="chip">Conclusion</span></span>
+    </div>
+    <div class="callout rise mt" style="--i:7;--ch:var(--accent)">
+      <span class="vi"><b>Thông điệp xuyên suốt:</b> dữ liệu có hạn sử dụng — giá trị của một sự kiện giảm dần theo từng giây, nên xu hướng là xử lý nó ngay tại nơi và lúc nó phát sinh. Nhưng real-time và edge không phải viên đạn bạc.</span>
+      <span class="en"><b>The common thread:</b> data has an expiry date — an event loses value every second, so the trend is to process it where and when it happens. But real-time and edge are not a silver bullet.</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p class="vi">Bài đi theo năm câu hỏi: vì sao phải nhanh, làm thế nào, ai đang làm, khi nào không nên, và đi về đâu. Dòng chip phía dưới là trình tự chi tiết: vấn đề → khái niệm → vì sao là xu hướng → edge hoạt động thế nào → kiến trúc → case study → mặt trái → xu hướng → kết luận.</p>
+    <p class="en">The talk follows five questions: why so fast, how, who, when not to, and where next. The chips show the detailed order: problem → concepts → why it is a trend → how the edge works → architecture → case studies → downsides → trends → conclusion.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     CHAPTER 1 — WHY SO FAST?
+     ===================================================== -->
+<section class="slide divider" data-ch="1" id="ch1" data-toc-vi="01 — Vì sao phải nhanh?" data-toc-en="01 — Why so fast?">
+  <div class="stream"><i style="--d:0"></i><i style="--d:1.1"></i><i style="--d:2.2"></i></div>
+  <div class="big">01</div>
+  <div class="d-kicker"><span class="vi">Câu hỏi 1</span><span class="en">Question 1</span></div>
+  <h2><span class="vi">Vì sao phải nhanh?</span><span class="en">Why so fast?</span></h2>
+  <p class="lede"><span class="vi">Một cảnh báo đến sau khi tiền đã đi mất thì gần như vô nghĩa.</span><span class="en">An alert that arrives after the money is gone is almost worthless.</span></p>
+  <ol>
+    <li><b>1.1</b><span class="vi">Tiền của bạn đi nhanh hơn hệ thống phát hiện lừa đảo?</span><span class="en">Is your money moving faster than fraud detection?</span></li>
+    <li><b>1.2</b><span class="vi">Cách làm truyền thống và giới hạn của nó</span><span class="en">The traditional approach and its limits</span></li>
+  </ol>
+</section>
+
+<!-- 1.1 HOOK -->
+<section class="slide" data-ch="1" data-sec="1.1" id="hook">
+  <h2><span class="vi">Tiền của bạn đi <em>nhanh hơn</em> hệ thống phát hiện lừa đảo?</span><span class="en">Is your money moving <em>faster</em> than fraud detection?</span></h2>
+  <div class="s-body g-7-5">
+    <div class="stack">
+      <div class="card rise kpi" style="--i:0;display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center">
+        <div class="v">+27%</div>
+        <div>
+          <div class="l" style="margin:0"><span class="vi">giao dịch chuyển tiền nhanh 24/7 qua NAPAS năm 2025</span><span class="en">24/7 instant transfers through NAPAS in 2025</span></div>
+          <div class="chips mt-s"><span class="chip"><span class="vi">thanh toán trực tuyến</span><span class="en">online payments</span>&nbsp;<b class="c-good">+25%</b></span><span class="chip"><span class="vi">rút tiền ATM</span><span class="en">ATM withdrawals</span>&nbsp;<b class="c-bad">−29%</b></span></div>
+        </div>
+      </div>
+      <div class="card rise kpi" style="--i:1;display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center">
+        <div class="v"><span class="vi">3,4 tr</span><span class="en">3.4 M</span></div>
+        <div class="l" style="margin:0"><span class="vi">hơn 3,4 triệu cảnh báo giao dịch đáng ngờ đã được gửi tới khách hàng trong năm 2025</span><span class="en">more than 3.4 million suspicious-transaction alerts were sent to customers in 2025</span></div>
+      </div>
+      <div class="card hl rise kpi" style="--i:2;display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center">
+        <div class="v">~60 s</div>
+        <div class="l" style="margin:0"><span class="vi">là khoảng thời gian kẻ gian ở Thái Lan cần để chuyển tiền của nạn nhân sang tài khoản trung gian (“tài khoản la”)</span><span class="en">is roughly how long fraudsters in Thailand need to move a victim's money into an intermediary “mule” account</span><sup class="r">[15]</sup></div>
+      </div>
+    </div>
+    <div class="card rise" style="--i:3;display:flex;flex-direction:column;justify-content:center;gap:16px">
+      <div class="countdown" data-fig="countdown">
+        <svg viewBox="0 0 240 240" aria-hidden="true"><circle class="trk" cx="120" cy="120" r="104"/><circle class="arc" cx="120" cy="120" r="104"/></svg>
+        <div class="val"><b>60</b><span><span class="vi">giây</span><span class="en">seconds</span></span><em><span class="vi">tiền đang đi…</span><span class="en">money moving…</span></em></div>
+      </div>
+      <div class="vs-row">
+        <span><span class="vi">Batch chạy mỗi đêm</span><span class="en">Nightly batch</span></span><span class="mono tiny c-bad"><span class="vi">cảnh báo sau tới ~24 giờ</span><span class="en">alert up to ~24 h later</span></span>
+        <div class="bar" style="--w:100%;--c:var(--bad)"><i></i></div>
+        <span><span class="vi">Hướng sự kiện</span><span class="en">Event-driven</span></span><span class="mono tiny c-good"><span class="vi">phản ứng khi sự kiện phát sinh</span><span class="en">reacts as the event happens</span></span>
+        <div class="bar" style="--w:3%;--c:var(--good)"><i></i></div>
+      </div>
+    </div>
+  </div>
+  <p class="src">[16] <span class="vi">Tạp chí Kinh tế Tài chính — số liệu NAPAS năm 2025</span><span class="en">Tạp chí Kinh tế Tài chính — NAPAS figures for 2025</span> · [15] Kai Waehner, 10/2024</p>
+  <aside class="notes">
+    <p class="vi">Một cảnh báo lừa đảo gửi đến sau khi tiền đã đi mất thì gần như vô nghĩa. Nếu hệ thống chỉ chạy báo cáo mỗi đêm, kẻ gian đã có cả một ngày để rút tiền. Đây chính là lý do thế giới chuyển từ xử lý theo lô sang xử lý theo sự kiện. (Đồng hồ bên phải đếm ngược 60 giây thật khi vào slide.)</p>
+    <p class="en">A fraud alert that arrives after the money has left is almost worthless. If the system only runs a nightly report, the fraudster has a whole day to cash out. That is why the world is moving from batch processing to event processing. (The ring on the right counts down a real 60 seconds when the slide opens.)</p>
+  </aside>
+</section>
+
+<!-- 1.2 BATCH / LAMBDA / KAPPA -->
+<section class="slide" data-ch="1" data-sec="1.2" id="batch">
+  <h2><span class="vi">Cách làm truyền thống và giới hạn của nó</span><span class="en">The traditional approach and its limits</span></h2>
+  <div class="s-body">
+    <div class="g3">
+      <div class="card rise fig col" style="--i:0">
+        <span class="label c">Batch</span>
+        <svg viewBox="0 0 340 162" role="img" aria-label="Batch: results are as stale as the gap between runs">
+          <line x1="8" y1="104" x2="330" y2="104" class="ln" marker-end="url(#ah)"/>
+          <g style="fill:var(--ink-2)">
+            <circle cx="28" cy="104" r="3.6"/><circle cx="44" cy="104" r="3.6"/><circle cx="82" cy="104" r="3.6"/><circle cx="98" cy="104" r="3.6"/><circle cx="121" cy="104" r="3.6"/><circle cx="139" cy="104" r="3.6"/><circle cx="160" cy="104" r="3.6"/><circle cx="176" cy="104" r="3.6"/><circle cx="199" cy="104" r="3.6"/><circle cx="218" cy="104" r="3.6"/><circle cx="236" cy="104" r="3.6"/><circle cx="284" cy="104" r="3.6"/><circle cx="302" cy="104" r="3.6"/>
+          </g>
+          <rect x="58" y="44" width="12" height="76" rx="3" class="fill-ch"/>
+          <rect x="252" y="44" width="12" height="76" rx="3" class="fill-ch"/>
+          <text x="64" y="34" text-anchor="middle" class="mono tc" font-size="12" font-weight="700">cron 00:00</text>
+          <text x="258" y="34" text-anchor="middle" class="mono tc" font-size="12" font-weight="700">cron 01:00</text>
+          <path d="M70 128 v7 h182 v-7" class="ln-bad"/>
+          <text x="161" y="150" text-anchor="middle" class="tb vi" font-size="12.5" font-weight="600">độ trễ = khoảng cách giữa 2 lần chạy</text>
+          <text x="161" y="150" text-anchor="middle" class="tb en" font-size="12.5" font-weight="600">staleness = gap between two runs</text>
+        </svg>
+        <p class="small mt-s" style="margin-bottom:0"><span class="vi">Dữ liệu được gom lại; cron job hoặc cụm Spark/Hadoop xử lý theo lịch (mỗi giờ, mỗi đêm). Kết quả luôn “cũ” bằng đúng khoảng cách giữa hai lần chạy.</span><span class="en">Data is collected, then a cron job or a Spark/Hadoop cluster runs on a schedule (hourly, nightly). Results are always as stale as the gap between runs.</span></p>
+        <div class="chips card-foot"><span class="chip"><span class="vi">dễ, quen thuộc</span><span class="en">simple, familiar</span></span><span class="chip" style="color:var(--bad)"><span class="vi">kết quả luôn cũ</span><span class="en">always stale</span></span></div>
+      </div>
+      <div class="card rise fig col" style="--i:1">
+        <span class="label c"><span class="vi">Kiến trúc Lambda</span><span class="en">Lambda architecture</span></span>
+        <svg viewBox="0 0 340 162" role="img" aria-label="Lambda architecture: a batch layer and a speed layer run in parallel and are merged">
+          <rect x="2" y="56" width="72" height="40" rx="8" class="box"/>
+          <text x="38" y="81" text-anchor="middle" font-size="13" font-weight="600" class="vi">Nguồn</text><text x="38" y="81" text-anchor="middle" font-size="13" font-weight="600" class="en">Source</text>
+          <rect x="116" y="10" width="112" height="40" rx="8" class="box"/>
+          <text x="172" y="35" text-anchor="middle" font-size="13" font-weight="600">Batch layer</text>
+          <rect x="116" y="102" width="112" height="40" rx="8" class="box"/>
+          <text x="172" y="127" text-anchor="middle" font-size="13" font-weight="600">Speed layer</text>
+          <rect x="266" y="56" width="72" height="40" rx="8" class="box"/>
+          <text x="302" y="81" text-anchor="middle" font-size="13" font-weight="600" class="vi">Ghép</text><text x="302" y="81" text-anchor="middle" font-size="13" font-weight="600" class="en">Merge</text>
+          <path d="M74 76 C96 76 94 30 114 30" class="ln" marker-end="url(#ah)"/>
+          <path d="M74 76 C96 76 94 122 114 122" class="ln" marker-end="url(#ah)"/>
+          <path d="M228 30 C248 30 246 76 264 76" class="ln" marker-end="url(#ah)"/>
+          <path d="M228 122 C248 122 246 76 264 76" class="ln" marker-end="url(#ah)"/>
+          <rect x="128" y="64" width="88" height="24" rx="12" class="box-bad"/>
+          <text x="172" y="81" text-anchor="middle" class="mono tb" font-size="12" font-weight="700">logic × 2</text>
+        </svg>
+        <p class="small mt-s" style="margin-bottom:0"><span class="vi">Chạy song song một hệ batch và một hệ real-time. Jay Kreps (đồng tác giả Kafka) chỉ ra: mọi logic phải viết hai lần, kết quả phải ghép lại, vận hành hai hệ phân tán khó hơn một.</span><span class="en">Run a batch system and a real-time system side by side. Jay Kreps (Kafka co-creator) pointed out: every piece of logic is written twice, results must be merged, and two distributed systems are harder to run than one.</span><sup class="r">[17]</sup></p>
+        <div class="chips card-foot"><span class="chip" style="color:var(--bad)"><span class="vi">2× code</span><span class="en">2× code</span></span><span class="chip" style="color:var(--bad)"><span class="vi">2× vận hành</span><span class="en">2× operations</span></span></div>
+      </div>
+      <div class="card hl rise fig col" style="--i:2">
+        <span class="label c"><span class="vi">Kiến trúc Kappa · Kreps 2014</span><span class="en">Kappa architecture · Kreps 2014</span></span>
+        <svg viewBox="0 0 340 162" role="img" aria-label="Kappa: one log, one stream job, replay to recompute">
+          <text x="8" y="44" class="mono tm" font-size="11.5" font-weight="700">log · Kafka</text>
+          <g>
+            <rect x="8" y="54" width="20" height="30" rx="3" class="box-2"/><rect x="30" y="54" width="20" height="30" rx="3" class="box-2"/><rect x="52" y="54" width="20" height="30" rx="3" class="box-2"/><rect x="74" y="54" width="20" height="30" rx="3" class="box-2"/><rect x="96" y="54" width="20" height="30" rx="3" class="box-2"/><rect x="118" y="54" width="20" height="30" rx="3" class="box-2"/><rect x="140" y="54" width="20" height="30" rx="3" class="box-2"/>
+            <rect x="162" y="54" width="20" height="30" rx="3" class="fill-ch" opacity=".55"/><rect x="184" y="54" width="20" height="30" rx="3" class="fill-ch"/>
+          </g>
+          <line x1="206" y1="69" x2="244" y2="69" class="ln-ch" marker-end="url(#ah-c2)" style="stroke:var(--c1)"/>
+          <rect x="248" y="48" width="88" height="42" rx="8" class="box-ch"/>
+          <text x="292" y="74" text-anchor="middle" font-size="13" font-weight="600">Stream job</text>
+          <path d="M18 88 C18 136 292 136 292 94" class="ln-ch dash" style="stroke:var(--c1)"/>
+          <text x="155" y="146" text-anchor="middle" class="mono tc vi" font-size="12" font-weight="700">replay → tính lại</text>
+          <text x="155" y="146" text-anchor="middle" class="mono tc en" font-size="12" font-weight="700">replay → recompute</text>
+        </svg>
+        <p class="small mt-s" style="margin-bottom:0"><span class="vi">Chỉ dùng <b>một</b> hệ stream; khi cần tính lại thì phát lại (replay) lịch sử từ log. Ý tưởng này sau được gọi là kiến trúc Kappa.</span><span class="en">Use <b>one</b> stream system; to recompute, replay the history from the log. The idea later became known as the Kappa architecture.</span><sup class="r">[17]</sup></p>
+        <div class="chips card-foot"><span class="chip c"><span class="vi">1 hệ thống</span><span class="en">1 system</span></span><span class="chip c"><span class="vi">replay từ log</span><span class="en">replay from the log</span></span></div>
+      </div>
+    </div>
+    <div class="callout big rise mt" style="--i:3">
+      <span class="vi"><b>Nguyên tắc thực dụng:</b> độ trễ không quan trọng → dùng batch · độ trễ quan trọng → dùng stream · tránh làm cả hai nếu không thực sự cần.</span>
+      <span class="en"><b>A pragmatic rule:</b> latency doesn't matter → use batch · latency matters → use streaming · avoid running both unless you really must.</span>
+    </div>
+  </div>
+  <p class="src">[17] InfoQ (09/2014), Questioning the Lambda Architecture — <span class="vi">tóm tắt bài của Jay Kreps</span><span class="en">summary of Jay Kreps' article</span></p>
+  <aside class="notes">
+    <p class="vi">Batch cho kết quả luôn cũ bằng khoảng cách giữa hai lần chạy. Kiến trúc Lambda cố có cả hai nhưng phải viết logic hai lần và vận hành hai hệ. Kreps đề xuất chỉ dùng một hệ stream và replay từ log khi cần tính lại. Nguyên tắc rút ra rất thực dụng: độ trễ không quan trọng thì dùng batch, độ trễ quan trọng thì dùng stream, và tránh làm cả hai nếu không thực sự cần.</p>
+    <p class="en">Batch results are always as stale as the gap between runs. The Lambda architecture tries to have both, at the cost of writing logic twice and running two systems. Kreps proposed a single stream system that replays the log to recompute. The rule is pragmatic: latency doesn't matter → batch; latency matters → stream; avoid both unless you must.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     CHAPTER 2 — HOW?
+     ===================================================== -->
+<section class="slide divider" data-ch="2" id="ch2" data-toc-vi="02 — Làm thế nào?" data-toc-en="02 — How does it work?">
+  <div class="stream"><i style="--d:0"></i><i style="--d:1.1"></i><i style="--d:2.2"></i></div>
+  <div class="big">02</div>
+  <div class="d-kicker"><span class="vi">Câu hỏi 2</span><span class="en">Question 2</span></div>
+  <h2><span class="vi">Làm thế nào?</span><span class="en">How does it work?</span></h2>
+  <p class="lede"><span class="vi">Event-driven, serverless, edge — và cách ghép chúng thành một pipeline.</span><span class="en">Event-driven, serverless, edge — and how they fit together into a pipeline.</span></p>
+  <ol>
+    <li><b>2.1</b><span class="vi">Ba khái niệm nền tảng và một chuẩn chung</span><span class="en">Three core concepts and one common standard</span></li>
+    <li><b>2.2</b><span class="vi">Batch vs Streaming: chọn cái nào?</span><span class="en">Batch vs streaming: which one?</span></li>
+    <li><b>2.3</b><span class="vi">Vì sao gọi là “xu hướng”? Những con số</span><span class="en">Why call it a trend? The numbers</span></li>
+    <li><b>2.4</b><span class="vi">Edge hoạt động thế nào?</span><span class="en">How does the edge work?</span></li>
+    <li><b>2.5</b><span class="vi">Hai mô hình serverless phổ biến</span><span class="en">Two popular serverless models</span></li>
+    <li><b>2.6</b><span class="vi">Kiến trúc pipeline và công nghệ ở từng tầng</span><span class="en">Pipeline architecture and the tech at each layer</span></li>
+  </ol>
+</section>
+
+<!-- 2.1 CONCEPTS -->
+<section class="slide" data-ch="2" data-sec="2.1" id="concepts">
+  <h2><span class="vi">Ba khái niệm nền tảng — và <em>một chuẩn chung</em></span><span class="en">Three core concepts — and <em>one common standard</em></span></h2>
+  <div class="s-body g-7-5">
+    <div class="stack">
+      <div class="card concept rise" style="--i:0">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+        <div>
+          <h3>Event-driven</h3>
+          <p><span class="vi">Hệ thống phản ứng khi có sự kiện xảy ra, không chờ lịch chạy.</span><span class="en">The system reacts when an event happens instead of waiting for a schedule.</span></p>
+          <p class="eg"><b><span class="vi">Ví dụ</span><span class="en">Example</span></b><span class="vi">Có đơn hàng mới → trừ kho, gửi thông báo, cập nhật dashboard cùng lúc.</span><span class="en">A new order → update stock, notify the customer and refresh the dashboard at once.</span></p>
+        </div>
+      </div>
+      <div class="card concept rise" style="--i:1">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M8 4C6 4 5 5 5 7v2c0 1.2-.8 2-2 2v2c1.2 0 2 .8 2 2v2c0 2 1 3 3 3M16 4c2 0 3 1 3 3v2c0 1.2.8 2 2 2v2c-1.2 0-2 .8-2 2v2c0 2-1 3-3 3M10 12h4"/></svg></div>
+        <div>
+          <h3>Serverless</h3>
+          <p><span class="vi">Chỉ viết hàm; nhà cung cấp lo máy chủ, tự scale, tính tiền theo lần chạy.</span><span class="en">You write functions; the provider runs the servers, scales automatically and bills per invocation.</span></p>
+          <p class="eg"><b><span class="vi">Ví dụ</span><span class="en">Example</span></b>AWS Lambda, Cloudflare Workers, Vercel Functions</p>
+        </div>
+      </div>
+      <div class="card concept rise" style="--i:2">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg></div>
+        <div>
+          <h3>Edge computing</h3>
+          <p><span class="vi">Code chạy ở máy chủ gần người dùng thay vì một data center ở xa.</span><span class="en">Code runs on servers close to the user instead of in a distant data centre.</span></p>
+          <p class="eg"><b><span class="vi">Ví dụ</span><span class="en">Example</span></b><span class="vi">Request từ TP.HCM được xử lý ngay tại TP.HCM.</span><span class="en">A request from Ho Chi Minh City is handled in Ho Chi Minh City.</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="card hl rise" style="--i:3;display:flex;flex-direction:column;gap:10px">
+      <span class="label c">CloudEvents · CNCF graduated 01/2024<sup class="r">[22]</sup></span>
+      <p class="small" style="margin:0"><span class="vi">Chuẩn mô tả “phong bì” của sự kiện — nguồn, loại, thời điểm… — để các hệ thống hiểu nhau.</span><span class="en">A standard “envelope” for events — source, type, time… — so that systems understand each other.</span></p>
+<pre class="code"><span class="p">{</span>
+  <span class="k">"specversion"</span><span class="p">:</span> <span class="s">"1.0"</span><span class="p">,</span>
+  <span class="k">"id"</span><span class="p">:</span> <span class="s">"evt-7f3a91"</span><span class="p">,</span>
+  <span class="k">"source"</span><span class="p">:</span> <span class="s">"/shop/checkout"</span><span class="p">,</span>
+  <span class="k">"type"</span><span class="p">:</span> <span class="s">"vn.shop.order.created"</span><span class="p">,</span>
+  <span class="k">"time"</span><span class="p">:</span> <span class="s">"2026-10-22T08:15:30Z"</span><span class="p">,</span>
+  <span class="k">"data"</span><span class="p">: {</span> <span class="k">"orderId"</span><span class="p">:</span> <span class="n">1042</span><span class="p">,</span> <span class="k">"total"</span><span class="p">:</span> <span class="n">259000</span> <span class="p">}</span>
+<span class="p">}</span></pre>
+      <div class="chips"><span class="chip">Azure Event Grid</span><span class="chip">Google Eventarc</span><span class="chip">Alibaba EventBridge</span></div>
+    </div>
+  </div>
+  <p class="src">[22] TFIR (01/2024), CNCF Announces Graduation of CloudEvents · <span class="vi">JSON minh hoạ theo đặc tả CloudEvents 1.0</span><span class="en">illustrative JSON following the CloudEvents 1.0 spec</span></p>
+  <aside class="notes">
+    <p class="vi">Ba khái niệm: event-driven là phản ứng theo sự kiện; serverless là chỉ viết hàm, không lo máy chủ; edge là chạy code gần người dùng. CloudEvents cho thấy event-driven đã trưởng thành tới mức có chuẩn công nghiệp — giống như HTTP đã chuẩn hoá web.</p>
+    <p class="en">Three concepts: event-driven means reacting to events; serverless means writing functions without managing servers; edge means running code close to users. CloudEvents shows event-driven has matured enough to have an industry standard — much as HTTP standardised the web.</p>
+  </aside>
+</section>
+
+<!-- 2.2 BATCH VS STREAMING -->
+<section class="slide" data-ch="2" data-sec="2.2" id="batch-vs-stream">
+  <h2><span class="vi">Batch vs Streaming: chọn cái nào?</span><span class="en">Batch vs streaming: which one?</span></h2>
+  <div class="s-body">
+    <table class="tbl stagger">
+      <thead><tr><th style="width:20%"><span class="vi">Tiêu chí</span><span class="en">Criterion</span></th><th style="width:38%">Batch</th><th class="c">Event-driven streaming</th></tr></thead>
+      <tbody>
+        <tr style="--i:0"><td><span class="vi">Độ trễ</span><span class="en">Latency</span></td><td><span class="vi">Phút đến giờ</span><span class="en">Minutes to hours</span></td><td><span class="vi">Mili giây đến giây</span><span class="en">Milliseconds to seconds</span></td></tr>
+        <tr style="--i:1" class="hl"><td><span class="vi">Cách tính lại</span><span class="en">Recompute</span></td><td><span class="vi">Chạy lại toàn bộ truy vấn</span><span class="en">Re-run the whole query</span></td><td><span class="vi">Chỉ cập nhật phần thay đổi (incremental)</span><span class="en">Update only what changed (incremental)</span></td></tr>
+        <tr style="--i:2"><td><span class="vi">Chi phí</span><span class="en">Cost</span></td><td><span class="vi">Trả cho cụm máy kể cả lúc rảnh</span><span class="en">Pay for the cluster even when idle</span></td><td><span class="vi">Trả theo lượng sự kiện thực tế</span><span class="en">Pay for the events you actually process</span></td></tr>
+        <tr style="--i:3"><td><span class="vi">Độ phức tạp</span><span class="en">Complexity</span></td><td><span class="vi">Quen thuộc, dễ debug</span><span class="en">Familiar, easy to debug</span></td><td><span class="vi">Phải xử lý thứ tự, trùng lặp, trễ của sự kiện</span><span class="en">Must handle ordering, duplicates and late events</span></td></tr>
+        <tr style="--i:4"><td><span class="vi">Phù hợp</span><span class="en">Good for</span></td><td><span class="vi">Báo cáo tháng, huấn luyện ML, xử lý lịch sử</span><span class="en">Monthly reports, ML training, historical processing</span></td><td><span class="vi">Chống gian lận, định giá động, cảnh báo IoT, dashboard live</span><span class="en">Fraud prevention, dynamic pricing, IoT alerts, live dashboards</span></td></tr>
+      </tbody>
+    </table>
+    <div class="card rise mt fig" style="--i:6;display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:center">
+      <svg data-fig="incr" viewBox="0 0 420 108" role="img" aria-label="Batch recomputes every cell; incremental recomputes only the new cells">
+        <text x="0" y="12" class="mono" font-size="11.5" font-weight="700" style="fill:var(--c1)">BATCH</text>
+        <text x="232" y="12" class="mono tc" font-size="11.5" font-weight="700">INCREMENTAL</text>
+        <text x="0" y="104" class="tm vi" font-size="12">tính lại 100% dữ liệu</text><text x="0" y="104" class="tm en" font-size="12">recompute 100% of the data</text>
+        <text x="232" y="104" class="tm vi" font-size="12">chỉ tính phần Δ mới đến</text><text x="232" y="104" class="tm en" font-size="12">compute only the new Δ</text>
+      </svg>
+      <p class="small" style="margin:0"><span class="vi">Cơ sở dữ liệu streaming như <b>RisingWave</b> giữ sẵn kết quả và chỉ cập nhật phần bị ảnh hưởng bởi dữ liệu mới — chi phí tỷ lệ với <b>lượng thay đổi</b>, không phải toàn bộ dữ liệu.</span><span class="en">Streaming databases such as <b>RisingWave</b> keep results materialised and update only what new data affects — cost scales with <b>the amount of change</b>, not with the whole dataset.</span><sup class="r">[23]</sup></p>
+    </div>
+  </div>
+  <p class="src">[23] RisingWave, Incremental Materialized Views Explained</p>
+  <aside class="notes">
+    <p class="vi">Nhấn mạnh hàng “Cách tính lại”: cơ sở dữ liệu streaming như RisingWave giữ sẵn kết quả và chỉ cập nhật phần bị ảnh hưởng bởi dữ liệu mới, nên chi phí tỷ lệ với lượng thay đổi chứ không phải toàn bộ dữ liệu. Đổi lại, streaming phức tạp hơn: phải xử lý thứ tự, trùng lặp và sự kiện đến trễ.</p>
+    <p class="en">Stress the “Recompute” row: streaming databases like RisingWave keep results ready and update only what new data affects, so cost scales with change, not with the full dataset. The trade-off is complexity: ordering, duplicates and late events.</p>
+  </aside>
+</section>
+
+<!-- 2.3 NUMBERS -->
+<section class="slide" data-ch="2" data-sec="2.3" id="numbers">
+  <h2><span class="vi">Vì sao gọi là “xu hướng”? Những con số</span><span class="en">Why call it a “trend”? The numbers</span></h2>
+  <div class="s-body">
+    <div class="g3">
+      <div class="card hl kpi rise" style="--i:0">
+        <div class="v">~450<small><span class="vi">tỷ USD</span><span class="en">bn USD</span></small></div>
+        <div class="l"><span class="vi">chi tiêu toàn cầu cho edge computing dự báo năm 2029 — gần gấp đôi năm 2025</span><span class="en">global edge-computing spending forecast for 2029 — nearly double 2025</span></div>
+        <div class="bars">
+          <span>2025</span><div class="bar"><i style="--w:58.9%;--i:0"></i></div><span>~265</span>
+          <span>2029</span><div class="bar"><i style="--w:100%;--i:1"></i></div><span>~450</span>
+        </div>
+        <div class="who">IDC · 02/2026 [1]</div>
+      </div>
+      <div class="card kpi rise" style="--i:1">
+        <div class="v">90%</div>
+        <div class="l"><span class="vi">lãnh đạo IT dự định tăng đầu tư cho data streaming</span><span class="en">of IT leaders plan to increase investment in data streaming</span></div>
+        <div class="bars">
+          <span><span class="vi">tăng đầu tư</span><span class="en">invest more</span></span><div class="bar"><i style="--w:90%;--i:0"></i></div><span>90%</span>
+          <span><span class="vi">ưu tiên chiến lược</span><span class="en">strategic priority</span></span><div class="bar"><i style="--w:86%;--i:1"></i></div><span>86%</span>
+        </div>
+        <div class="who">Confluent · 2025 [2]</div>
+      </div>
+      <div class="card kpi rise" style="--i:2">
+        <div class="v">&gt;70%</div>
+        <div class="l"><span class="vi">khách hàng AWS của Datadog đã dùng serverless</span><span class="en">of Datadog's AWS customers already use serverless</span></div>
+        <div class="bars">
+          <span>AWS</span><div class="bar"><i style="--w:70%;--i:0"></i></div><span>&gt;70%</span>
+          <span>Google Cloud</span><div class="bar"><i style="--w:60%;--i:1"></i></div><span>~60%</span>
+          <span>Azure</span><div class="bar"><i style="--w:50%;--i:2"></i></div><span>~50%</span>
+        </div>
+        <div class="who">Datadog · 2023 [3]</div>
+      </div>
+    </div>
+    <div class="g3 mt">
+      <div class="card tight rise small" style="--i:3"><span class="vi"><b class="c-ch">Tài chính</b> là ngành có chi tiêu edge tăng nhanh nhất; <b class="c-ch">bán lẻ &amp; dịch vụ</b> chi nhiều nhất.</span><span class="en"><b class="c-ch">Finance</b> is the fastest-growing edge spender; <b class="c-ch">retail &amp; services</b> spend the most.</span><sup class="r">[1]</sup></div>
+      <div class="card tight rise small" style="--i:4"><span class="vi"><b class="c-ch">44%</b> báo cáo lợi nhuận đầu tư gấp 5 lần từ data streaming (năm 2024 là 41%).</span><span class="en"><b class="c-ch">44%</b> report a 5× return on data-streaming investment (41% in 2024).</span><sup class="r">[2]</sup></div>
+      <div class="card tight rise small" style="--i:5"><span class="vi"><b class="c-ch">89%</b> cho rằng nền tảng streaming giúp triển khai AI dễ hơn.</span><span class="en"><b class="c-ch">89%</b> say streaming platforms make AI easier to deploy.</span><sup class="r">[2]</sup></div>
+    </div>
+  </div>
+  <p class="src"><span class="vi">Confluent: khảo sát 4.175 lãnh đạo IT tại 12 nước, gồm Singapore, Indonesia, Ấn Độ. Confluent và Datadog là các hãng bán sản phẩm trong lĩnh vực này — số liệu do chính hãng công bố.</span><span class="en">Confluent: survey of 4,175 IT leaders in 12 countries incl. Singapore, Indonesia, India. Confluent and Datadog sell products in this space — these are vendor-reported figures.</span> · [1] IDC · [2] Confluent · [3] Datadog</p>
+  <aside class="notes">
+    <p class="vi">Ba con số chính: chi tiêu edge gần 450 tỷ USD năm 2029 (gần gấp đôi 2025), 90% lãnh đạo IT muốn tăng đầu tư cho streaming, hơn 70% khách hàng AWS của Datadog đã dùng serverless. Lưu ý nói rõ nguồn: theo báo cáo của Confluent và Datadog — đây là các hãng bán sản phẩm trong lĩnh vực này.</p>
+    <p class="en">Three headline numbers: edge spending near USD 450 bn by 2029 (almost double 2025), 90% of IT leaders want to invest more in streaming, and more than 70% of Datadog's AWS customers use serverless. Say the source out loud: “according to Confluent / Datadog” — both sell products in this space.</p>
+  </aside>
+</section>
+
+<!-- 2.4 HOW THE EDGE WORKS -->
+<section class="slide" data-ch="2" data-sec="2.4" id="edge">
+  <h2><span class="vi">Edge hoạt động thế nào? Ví dụ <em>Cloudflare</em></span><span class="en">How does the edge work? The <em>Cloudflare</em> example</span></h2>
+  <div class="s-body g-4-8">
+    <div class="stack">
+      <div class="card kpi sm rise" style="--i:0"><div class="v">348</div><div class="l" style="margin-top:4px"><span class="vi">thành phố có mặt mạng Cloudflare; <b>95%</b> người dùng Internet nằm trong phạm vi khoảng <b>50ms</b></span><span class="en">cities on Cloudflare's network; <b>95%</b> of Internet users are within about <b>50 ms</b></span><sup class="r">[4]</sup></div></div>
+      <div class="card kpi sm rise" style="--i:1">
+        <div class="v">3</div>
+        <div class="l" style="margin-top:4px"><span class="vi">điểm tại Việt Nam</span><span class="en">locations in Vietnam</span><sup class="r">[4]</sup></div>
+        <div class="chips mt-s"><span class="chip c"><i></i>HAN · <span class="vi">Hà Nội</span><span class="en">Hanoi</span></span><span class="chip c"><i></i>DAD · <span class="vi">Đà Nẵng</span><span class="en">Da Nang</span></span><span class="chip c"><i></i>SGN · TP.HCM</span></div>
+      </div>
+      <div class="card kpi sm rise" style="--i:2"><div class="v">~10×</div><div class="l" style="margin-top:4px"><span class="vi">giảm cold start (09/2025) nhờ định tuyến request tới máy chủ đã nạp sẵn Worker</span><span class="en">fewer cold starts (09/2025) by routing requests to servers that already have the Worker loaded</span><sup class="r">[7]</sup></div></div>
+    </div>
+    <div class="stack">
+      <div class="card rise fig" style="--i:3;padding-bottom:10px">
+        <svg viewBox="0 0 660 262" role="img" aria-label="VM, container and isolate: each step is lighter and denser">
+          <!-- VM -->
+          <text x="0" y="16" font-size="14" font-weight="700" class="vi">Máy ảo (VM)</text><text x="0" y="16" font-size="14" font-weight="700" class="en">Virtual machine</text>
+          <rect x="0" y="30" width="100" height="190" rx="8" class="ln"/><rect x="110" y="30" width="100" height="190" rx="8" class="ln"/>
+          <rect x="6" y="36" width="88" height="34" rx="5" class="box"/><text x="50" y="58" text-anchor="middle" font-size="12" class="t2">App</text>
+          <rect x="6" y="76" width="88" height="34" rx="5" class="box"/><text x="50" y="98" text-anchor="middle" font-size="12" class="t2">Runtime</text>
+          <rect x="6" y="116" width="88" height="98" rx="5" class="box-2"/><text x="50" y="170" text-anchor="middle" font-size="12" class="t2">Guest OS</text>
+          <rect x="116" y="36" width="88" height="34" rx="5" class="box"/><text x="160" y="58" text-anchor="middle" font-size="12" class="t2">App</text>
+          <rect x="116" y="76" width="88" height="34" rx="5" class="box"/><text x="160" y="98" text-anchor="middle" font-size="12" class="t2">Runtime</text>
+          <rect x="116" y="116" width="88" height="98" rx="5" class="box-2"/><text x="160" y="170" text-anchor="middle" font-size="12" class="t2">Guest OS</text>
+          <rect x="0" y="226" width="210" height="32" rx="6" class="box-2"/><text x="105" y="247" text-anchor="middle" font-size="12" class="mono tm">Hypervisor</text>
+          <!-- Container -->
+          <text x="225" y="16" font-size="14" font-weight="700">Container</text>
+          <g>
+            <rect x="225" y="118" width="48" height="102" rx="6" class="ln"/><rect x="279" y="118" width="48" height="102" rx="6" class="ln"/><rect x="333" y="118" width="48" height="102" rx="6" class="ln"/><rect x="387" y="118" width="48" height="102" rx="6" class="ln"/>
+            <rect x="229" y="122" width="40" height="30" rx="4" class="box"/><rect x="283" y="122" width="40" height="30" rx="4" class="box"/><rect x="337" y="122" width="40" height="30" rx="4" class="box"/><rect x="391" y="122" width="40" height="30" rx="4" class="box"/>
+            <rect x="229" y="156" width="40" height="60" rx="4" class="box-2"/><rect x="283" y="156" width="40" height="60" rx="4" class="box-2"/><rect x="337" y="156" width="40" height="60" rx="4" class="box-2"/><rect x="391" y="156" width="40" height="60" rx="4" class="box-2"/>
+            <text x="249" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text><text x="303" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text><text x="357" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text><text x="411" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text>
+            <text x="249" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text><text x="303" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text><text x="357" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text><text x="411" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text>
+          </g>
+          <rect x="225" y="226" width="210" height="32" rx="6" class="box-2"/><text x="330" y="247" text-anchor="middle" font-size="12" class="mono tm">Host OS + engine</text>
+          <!-- Isolates -->
+          <text x="450" y="16" font-size="14" font-weight="700" class="tc">V8 isolates</text>
+          <g class="fill-ch">
+            <rect x="452" y="104" width="22" height="18" rx="3"/><rect x="480" y="104" width="22" height="18" rx="3"/><rect x="508" y="104" width="22" height="18" rx="3"/><rect x="536" y="104" width="22" height="18" rx="3"/><rect x="564" y="104" width="22" height="18" rx="3"/><rect x="592" y="104" width="22" height="18" rx="3"/><rect x="620" y="104" width="22" height="18" rx="3"/>
+            <rect x="452" y="128" width="22" height="18" rx="3"/><rect x="480" y="128" width="22" height="18" rx="3"/><rect x="508" y="128" width="22" height="18" rx="3"/><rect x="536" y="128" width="22" height="18" rx="3"/><rect x="564" y="128" width="22" height="18" rx="3"/><rect x="592" y="128" width="22" height="18" rx="3"/><rect x="620" y="128" width="22" height="18" rx="3"/>
+            <rect x="452" y="152" width="22" height="18" rx="3"/><rect x="480" y="152" width="22" height="18" rx="3"/><rect x="508" y="152" width="22" height="18" rx="3"/><rect x="536" y="152" width="22" height="18" rx="3"/><rect x="564" y="152" width="22" height="18" rx="3"/><rect x="592" y="152" width="22" height="18" rx="3"/><rect x="620" y="152" width="22" height="18" rx="3"/>
+            <rect x="452" y="176" width="22" height="18" rx="3"/><rect x="480" y="176" width="22" height="18" rx="3"/><rect x="508" y="176" width="22" height="18" rx="3"/><rect x="536" y="176" width="22" height="18" rx="3"/><rect x="564" y="176" width="22" height="18" rx="3"/><rect x="592" y="176" width="22" height="18" rx="3"/><rect x="620" y="176" width="22" height="18" rx="3"/>
+            <rect x="452" y="200" width="22" height="18" rx="3"/><rect x="480" y="200" width="22" height="18" rx="3"/><rect x="508" y="200" width="22" height="18" rx="3"/><rect x="536" y="200" width="22" height="18" rx="3"/><rect x="564" y="200" width="22" height="18" rx="3"/><rect x="592" y="200" width="22" height="18" rx="3"/><rect x="620" y="200" width="22" height="18" rx="3" opacity=".45"/>
+          </g>
+          <rect x="450" y="226" width="194" height="32" rx="6" class="box-ch"/><text x="547" y="247" text-anchor="middle" font-size="12" class="mono vi">1 runtime V8 chạy sẵn</text><text x="547" y="247" text-anchor="middle" font-size="12" class="mono en">one warm V8 runtime</text>
+          <text x="547" y="62" text-anchor="middle" font-size="12.5" class="mono tc" font-weight="700">~100× <tspan class="vi">nhanh hơn</tspan><tspan class="en">faster start</tspan></text>
+          <text x="547" y="82" text-anchor="middle" font-size="12.5" class="mono tc" font-weight="700">~10× <tspan class="vi">ít bộ nhớ</tspan><tspan class="en">less memory</tspan></text>
+        </svg>
+      </div>
+      <div class="callout rise small" style="--i:4">
+        <span class="vi"><b>Ví von:</b> container giống như mỗi khách đến thì xây một căn nhà mới; isolate giống như chia phòng trong một khách sạn đã xây sẵn — khách đến là nhận phòng ngay. Một máy chủ chạy hàng trăm đến hàng nghìn isolate, mỗi isolate có bộ nhớ tách biệt.</span>
+        <span class="en"><b>Analogy:</b> a container is like building a new house for every guest; an isolate is like giving each guest a room in a hotel that is already built. One server runs hundreds to thousands of isolates, each with its own memory.</span><sup class="r">[5]</sup>
+      </div>
+    </div>
+  </div>
+  <p class="src">[4] Cloudflare Global Network · [5] Cloudflare Docs, How Workers works — <span class="vi">so với một tiến trình Node trong container, theo Cloudflare</span><span class="en">vs. a Node process in a container, per Cloudflare</span> · [7] Cloudflare Birthday Week 2025</p>
+  <aside class="notes">
+    <p class="vi">Thay vì khởi động một container hay máy ảo cho mỗi hàm, Workers tạo các isolate bên trong một runtime đang chạy sẵn. Theo Cloudflare, isolate khởi động nhanh hơn khoảng 100 lần và dùng ít hơn khoảng 10 lần bộ nhớ. Ví von: container là mỗi khách đến thì xây một căn nhà mới; isolate là chia phòng trong khách sạn đã xây sẵn, đến là nhận phòng ngay.</p>
+    <p class="en">Instead of booting a container or VM per function, Workers create isolates inside a runtime that is already running. Per Cloudflare, isolates start about 100× faster and use about 10× less memory. Analogy: a container builds a new house for every guest; an isolate hands out a room in a hotel that already exists.</p>
+  </aside>
+</section>
+
+<!-- 2.5 LAMBDA VS WORKERS -->
+<section class="slide" data-ch="2" data-sec="2.5" id="serverless">
+  <h2><span class="vi">So sánh hai mô hình serverless phổ biến</span><span class="en">Comparing two popular serverless models</span></h2>
+  <div class="s-body">
+    <table class="tbl stagger">
+      <thead><tr>
+        <th style="width:18%"><span class="vi">Tiêu chí</span><span class="en">Criterion</span></th>
+        <th style="width:41%">AWS Lambda · <span class="vi">serverless theo vùng</span><span class="en">regional serverless</span></th>
+        <th class="c">Cloudflare Workers · <span class="vi">serverless tại edge</span><span class="en">edge serverless</span></th>
+      </tr></thead>
+      <tbody>
+        <tr style="--i:0"><td><span class="vi">Nơi chạy</span><span class="en">Runs in</span></td><td><span class="vi">Trong một region AWS bạn chọn</span><span class="en">One AWS region you choose</span></td><td><span class="vi">Tại điểm mạng gần người dùng nhất</span><span class="en">The network location closest to the user</span></td></tr>
+        <tr style="--i:1"><td><span class="vi">Công nghệ cách ly</span><span class="en">Isolation</span></td><td><span class="vi">Môi trường thực thi riêng cho mỗi hàm</span><span class="en">A separate execution environment per function</span></td><td><span class="vi">V8 isolates trong runtime dùng chung</span><span class="en">V8 isolates inside a shared runtime</span><sup class="r">[5]</sup></td></tr>
+        <tr style="--i:2"><td>Cold start</td><td><span class="vi">AWS cho biết thường xảy ra ở dưới 1% lượt gọi</span><span class="en">AWS says it typically affects under 1% of invocations</span><sup class="r">[9]</sup></td><td><span class="vi">Gần như không đáng kể nhờ isolate</span><span class="en">Nearly negligible thanks to isolates</span><sup class="r">[5]</sup></td></tr>
+        <tr style="--i:3"><td><span class="vi">Giới hạn</span><span class="en">Limits</span></td><td><span class="vi">Linh hoạt hơn về bộ nhớ, thời gian chạy</span><span class="en">More flexible memory and run time</span></td><td><span class="vi">128MB bộ nhớ mỗi isolate; CPU 10ms/request ở gói Free, tối đa 5 phút ở gói trả phí</span><span class="en">128 MB per isolate; 10 ms CPU per request on Free, up to 5 min on paid plans</span><sup class="r">[6]</sup></td></tr>
+        <tr style="--i:4"><td><span class="vi">Thay đổi đáng chú ý</span><span class="en">Notable change</span></td><td class="hl" style="--ch:var(--c4)"><span class="vi">Từ <b>01/08/2025</b>, thời gian khởi tạo (INIT) bị tính tiền cho mọi cấu hình</span><span class="en">Since <b>1 Aug 2025</b>, the initialisation (INIT) phase is billed for every configuration</span><sup class="r">[9]</sup></td><td><span class="vi">2025: hỗ trợ thêm hàng trăm API Node.js</span><span class="en">2025: hundreds of additional Node.js APIs supported</span><sup class="r">[7]</sup></td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad rise mt" style="--i:6">
+      <span class="vi"><b>Cold start không chỉ là chuyện tốc độ</b> — từ 08/2025, trên Lambda nó còn là chuyện <b>chi phí</b>.</span>
+      <span class="en"><b>Cold starts are not only about speed</b> — since 08/2025 on Lambda they are also about <b>cost</b>.</span>
+    </div>
+  </div>
+  <p class="src">[5] Cloudflare Docs, How Workers works · [6] Cloudflare Docs, Workers Limits · [7] Cloudflare Birthday Week 2025 · [9] AWS Compute Blog (2025), Lambda standardizes billing for INIT phase</p>
+  <aside class="notes">
+    <p class="vi">Lambda chạy trong một region bạn chọn, mỗi hàm có môi trường thực thi riêng; Workers chạy tại điểm gần người dùng nhất bằng V8 isolate. Chi tiết đáng nói: AWS bắt đầu tính tiền phần INIT từ 8/2025 — ví dụ tốt cho thấy cold start không chỉ là chuyện tốc độ mà còn là chuyện chi phí.</p>
+    <p class="en">Lambda runs in a region you pick with a dedicated execution environment per function; Workers run at the location nearest the user using V8 isolates. Worth highlighting: AWS started billing the INIT phase in August 2025 — cold starts now cost money, not just time.</p>
+  </aside>
+</section>
+
+<!-- 2.6 PIPELINE -->
+<section class="slide" data-ch="2" data-sec="2.6" id="pipeline">
+  <h2><span class="vi">Kiến trúc pipeline và công nghệ ở từng tầng</span><span class="en">Pipeline architecture and the technology at each layer</span></h2>
+  <div class="s-body">
+    <div class="pipe-wrap">
+      <div class="pipe-grid">
+        <div></div>
+        <div class="stage-row">
+          <div class="track"><span class="evt">click · product</span></div>
+          <div class="stg rise" style="--i:0"><span class="n">01</span><h3><span class="vi">Thu nhận</span><span class="en">Ingest</span></h3><p><span class="vi">Nhận sự kiện, kiểm tra, gắn thông tin, lọc bot</span><span class="en">Receive, validate, enrich, filter bots</span></p></div>
+          <div class="stg rise" style="--i:1"><span class="n">02</span><h3><span class="vi">Hàng đợi / Stream</span><span class="en">Queue / Stream</span></h3><p><span class="vi">Đệm, không mất sự kiện khi phía sau quá tải</span><span class="en">Buffer; no lost events when downstream is overloaded</span></p></div>
+          <div class="stg rise" style="--i:2"><span class="n">03</span><h3><span class="vi">Xử lý</span><span class="en">Process</span></h3><p><span class="vi">Lọc, tổng hợp, phát hiện bất thường</span><span class="en">Filter, aggregate, detect anomalies</span></p></div>
+          <div class="stg rise" style="--i:3"><span class="n">04</span><h3><span class="vi">Lưu trữ</span><span class="en">Store</span></h3><p><span class="vi">Lưu kết quả và dữ liệu thô</span><span class="en">Keep results and raw data</span></p></div>
+          <div class="stg rise" style="--i:4"><span class="n">05</span><h3><span class="vi">Truy vấn / Hiển thị</span><span class="en">Query / Serve</span></h3><p><span class="vi">Dashboard, cảnh báo, API</span><span class="en">Dashboards, alerts, APIs</span></p></div>
+        </div>
+
+        <div class="rl c rise" style="--i:5">Cloudflare</div>
+        <div class="pc c rise" style="--i:5">Workers</div><div class="pc c rise" style="--i:5">Queues, Pipelines</div><div class="pc c rise" style="--i:5">Pipelines (SQL)</div><div class="pc c rise" style="--i:5">R2 (Iceberg), D1</div><div class="pc c rise" style="--i:5">R2 SQL</div>
+
+        <div class="rl rise" style="--i:6">AWS</div>
+        <div class="pc rise" style="--i:6">API Gateway + Lambda</div><div class="pc rise" style="--i:6">Kinesis, SQS</div><div class="pc rise" style="--i:6">Lambda, Managed Flink</div><div class="pc rise" style="--i:6">S3, DynamoDB</div><div class="pc rise" style="--i:6">Athena, QuickSight</div>
+
+        <div class="rl rise" style="--i:7"><span class="vi">Mã nguồn mở</span><span class="en">Open source</span></div>
+        <div class="pc none rise" style="--i:7">—</div><div class="pc rise" style="--i:7">Apache Kafka</div><div class="pc rise" style="--i:7">Apache Flink</div><div class="pc rise" style="--i:7">Iceberg, ClickHouse</div><div class="pc rise" style="--i:7">Apache Pinot, Grafana</div>
+      </div>
+    </div>
+    <div class="callout rise mt" style="--i:8">
+      <span class="vi"><b>09/2025 · Cloudflare Data Platform:</b> Pipelines nhận sự kiện từ Workers hoặc HTTP, biến đổi bằng SQL rồi ghi thành bảng Apache Iceberg trên R2; R2 SQL truy vấn trực tiếp các bảng đó. Một nhà cung cấp edge giờ đã có đủ cả 5 tầng — điều mà vài năm trước phải ghép từ nhiều hệ thống.</span>
+      <span class="en"><b>09/2025 · Cloudflare Data Platform:</b> Pipelines take events from Workers or HTTP, transform them with SQL and write Apache Iceberg tables on R2; R2 SQL queries those tables directly. One edge provider now covers all five layers — something that used to take several separate systems.</span><sup class="r">[8]</sup>
+    </div>
+  </div>
+  <p class="src">[8] DBTA (09/2025), Cloudflare unveils the Cloudflare Data Platform</p>
+  <aside class="notes">
+    <p class="vi">Đây là slide quan trọng nhất. Đi theo một sự kiện “click sản phẩm” từ trái sang phải qua 5 tầng: thu nhận ở edge, đệm trong hàng đợi, xử lý, lưu trữ, rồi truy vấn/hiển thị. Điểm đáng chú ý: ngày nay một nhà cung cấp edge đã có đủ cả 5 tầng, điều mà vài năm trước phải ghép từ nhiều hệ thống khác nhau.</p>
+    <p class="en">This is the most important slide. Follow one “product click” event left to right through the five layers: ingest at the edge, buffer in a queue, process, store, then query/serve. Note that a single edge provider now offers all five layers, which used to require stitching together several systems.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     CHAPTER 3 — WHO?
+     ===================================================== -->
+<section class="slide divider" data-ch="3" id="ch3" data-toc-vi="03 — Ai đang làm?" data-toc-en="03 — Who is doing it?">
+  <div class="stream"><i style="--d:0"></i><i style="--d:1.1"></i><i style="--d:2.2"></i></div>
+  <div class="big">03</div>
+  <div class="d-kicker"><span class="vi">Câu hỏi 3</span><span class="en">Question 3</span></div>
+  <h2><span class="vi">Ai đang làm?</span><span class="en">Who is doing it?</span></h2>
+  <p class="lede"><span class="vi">Ba case study: một nền tảng gọi xe, một siêu ứng dụng Đông Nam Á và một ngân hàng.</span><span class="en">Three case studies: a ride-hailing platform, a Southeast Asian super-app and a bank.</span></p>
+  <ol>
+    <li><b>3.1</b><span class="vi">Uber — định giá theo thời gian thực</span><span class="en">Uber — real-time pricing</span></li>
+    <li><b>3.2</b><span class="vi">Grab — streaming thành nền tảng tự phục vụ</span><span class="en">Grab — streaming as a self-service platform</span></li>
+    <li><b>3.3</b><span class="vi">Krungsri (Thái Lan) — chặn lừa đảo dưới 60 giây</span><span class="en">Krungsri (Thailand) — stopping fraud in under 60 seconds</span></li>
+  </ol>
+</section>
+
+<!-- 3.1 UBER -->
+<section class="slide" data-ch="3" data-sec="3.1" id="uber">
+  <h2><span class="vi">Uber — định giá theo <em>thời gian thực</em></span><span class="en">Uber — <em>real-time</em> pricing</span></h2>
+  <div class="s-body">
+    <div class="card rise fig fig-scroll" style="--i:0;padding:14px 18px 10px">
+      <span class="label c">Surge pricing · <span class="vi">Kafka của Uber xử lý hàng nghìn tỷ message và hàng petabyte dữ liệu mỗi ngày</span><span class="en">Uber's Kafka handles trillions of messages and petabytes of data every day</span><sup class="r">[13]</sup></span>
+      <svg viewBox="0 0 1152 218" role="img" aria-label="Ride requests and driver status flow through Kafka and Flink into a surge multiplier per zone">
+        <rect x="0" y="34" width="210" height="56" rx="10" class="box"/>
+        <text x="105" y="68" text-anchor="middle" font-size="16" font-weight="600" class="vi">Yêu cầu đặt xe</text><text x="105" y="68" text-anchor="middle" font-size="16" font-weight="600" class="en">Ride requests</text>
+        <rect x="0" y="128" width="210" height="56" rx="10" class="box"/>
+        <text x="105" y="162" text-anchor="middle" font-size="16" font-weight="600" class="vi">Tình trạng tài xế</text><text x="105" y="162" text-anchor="middle" font-size="16" font-weight="600" class="en">Driver status</text>
+        <rect x="290" y="68" width="160" height="82" rx="12" class="box-ch"/>
+        <text x="370" y="100" text-anchor="middle" font-size="19" font-weight="700" class="disp">Kafka</text>
+        <g class="fill-ch"><rect x="321" y="116" width="15" height="18" rx="3" opacity=".3"/><rect x="341" y="116" width="15" height="18" rx="3" opacity=".45"/><rect x="361" y="116" width="15" height="18" rx="3" opacity=".6"/><rect x="381" y="116" width="15" height="18" rx="3" opacity=".8"/><rect x="401" y="116" width="15" height="18" rx="3"/></g>
+        <rect x="530" y="68" width="160" height="82" rx="12" class="box-ch"/>
+        <text x="610" y="102" text-anchor="middle" font-size="19" font-weight="700" class="disp">Flink</text>
+        <text x="610" y="128" text-anchor="middle" font-size="13.5" class="t2 vi">tính hệ số giá / khu vực</text><text x="610" y="128" text-anchor="middle" font-size="13.5" class="t2 en">surge per zone</text>
+        <path d="M210 62 C250 62 248 96 286 96" class="ln-ch flow"/>
+        <path d="M210 156 C250 156 248 122 286 122" class="ln-ch flow"/>
+        <line x1="450" y1="109" x2="526" y2="109" class="ln-ch" marker-end="url(#ah-c3)"/>
+        <line x1="690" y1="109" x2="756" y2="109" class="ln-ch" marker-end="url(#ah-c3)"/>
+        <circle r="5" class="pkt glow"><animateMotion dur="2.6s" repeatCount="indefinite" path="M210 62 C250 62 248 96 286 96 L450 109 L526 109"/></circle>
+        <circle r="5" class="pkt glow"><animateMotion dur="2.6s" begin="-1.3s" repeatCount="indefinite" path="M210 156 C250 156 248 122 286 122 L450 109 L526 109"/></circle>
+        <g id="surge-hex" data-r="21.5" transform="translate(768 3)"></g>
+        <defs><linearGradient id="surge-leg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--c3);stop-opacity:.08"/><stop offset="1" style="stop-color:var(--c3);stop-opacity:.9"/></linearGradient></defs>
+        <rect x="1036" y="30" width="14" height="150" rx="4" fill="url(#surge-leg)"/>
+        <text x="1060" y="40" font-size="13" class="mono" font-weight="700">2.3×</text>
+        <text x="1060" y="180" font-size="13" class="mono tm" font-weight="700">1.0×</text>
+        <text x="1036" y="206" font-size="12" class="tm vi">minh hoạ</text><text x="1036" y="206" font-size="12" class="tm en">illustrative</text>
+      </svg>
+    </div>
+    <div class="g3 mt">
+      <div class="card rise" style="--i:1">
+        <h3>UberEats</h3>
+        <p class="small" style="margin:0"><span class="vi">Dashboard cho nhà hàng xem đơn, doanh thu gần như tức thì nhờ <b>Apache Pinot</b> với dữ liệu tổng hợp sẵn.</span><span class="en">Restaurant dashboards show orders and revenue almost instantly, powered by <b>Apache Pinot</b> over pre-aggregated data.</span><sup class="r">[13]</sup></p>
+      </div>
+      <div class="card rise" style="--i:2">
+        <h3><span class="vi">Thời COVID</span><span class="en">During COVID</span></h3>
+        <p class="small" style="margin:0"><span class="vi">Hệ thống tự động tạm dừng nhận đơn khi nhà hàng gần quá tải.</span><span class="en">The system automatically paused new orders when a restaurant was close to overload.</span><sup class="r">[13]</sup></p>
+      </div>
+      <div class="callout rise small" style="--i:3">
+        <span class="vi"><b>Câu hỏi cho lớp:</b> vì sao Uber chấp nhận dữ liệu không nhất quán tuyệt đối? → Giá tính từ dữ liệu cũ 5 phút còn tệ hơn giá tính từ dữ liệu mới nhưng thiếu vài sự kiện: ưu tiên <b>dữ liệu mới &amp; tính sẵn sàng</b>.</span>
+        <span class="en"><b>Question for the class:</b> why accept data that is not perfectly consistent? → A price from 5-minute-old data is worse than one from fresh data missing a few events: favour <b>freshness &amp; availability</b>.</span>
+      </div>
+    </div>
+  </div>
+  <p class="src">[13] ByteByteGo, How Uber Manages Petabytes of Real-Time Data</p>
+  <aside class="notes">
+    <p class="vi">Kafka nhận yêu cầu đặt xe và tình trạng tài xế; Flink tính hệ số giá cho từng khu vực. Hỏi lớp: vì sao Uber chấp nhận dữ liệu không nhất quán tuyệt đối? Vì giá tính từ dữ liệu cũ 5 phút còn tệ hơn giá tính từ dữ liệu mới nhưng thiếu vài sự kiện. Bản đồ hệ số chỉ mang tính minh hoạ.</p>
+    <p class="en">Kafka ingests ride requests and driver status; Flink computes a surge multiplier per zone. Ask the class: why accept imperfect consistency? Because a price from 5-minute-old data is worse than one from fresh data missing a few events. The multiplier map is illustrative.</p>
+  </aside>
+</section>
+
+<!-- 3.2 GRAB -->
+<section class="slide" data-ch="3" data-sec="3.2" id="grab">
+  <h2><span class="vi">Grab — streaming thành <em>nền tảng tự phục vụ</em></span><span class="en">Grab — streaming as a <em>self-service platform</em></span></h2>
+  <div class="s-body">
+    <div class="g3">
+      <div class="card hl kpi sm rise" style="--i:0"><div class="v">~5.000</div><div class="l"><span class="vi">tài nguyên streaming, tất cả định nghĩa dưới dạng code (infrastructure-as-code)</span><span class="en">streaming resources, all defined as code (infrastructure-as-code)</span></div></div>
+      <div class="card kpi sm rise" style="--i:1"><div class="v">~4×</div><div class="l"><span class="vi">số người dùng nội bộ hằng tháng tăng gần 4 lần</span><span class="en">growth in monthly internal users — nearly fourfold</span></div></div>
+      <div class="card kpi sm rise" style="--i:2"><div class="v">&gt;90%</div><div class="l"><span class="vi">tỷ lệ quy trình tự phục vụ thành công (nửa đầu 2023)</span><span class="en">success rate of self-service workflows (H1 2023)</span></div></div>
+    </div>
+    <div class="g-7-5 mt">
+      <div class="card rise fig" style="--i:3">
+        <svg viewBox="0 0 640 228" role="img" aria-label="Product teams use the Coban self-service portal to create Kafka topics, Flink pipelines, CDC and Kafka Connect">
+          <text x="60" y="12" text-anchor="middle" font-size="11" class="mono tm" font-weight="700" letter-spacing="1"><tspan class="vi">CÁC NHÓM</tspan><tspan class="en">TEAMS</tspan></text>
+          <rect x="0" y="26" width="120" height="32" rx="16" class="box"/><text x="60" y="47" text-anchor="middle" font-size="12.5">Deliveries</text>
+          <rect x="0" y="72" width="120" height="32" rx="16" class="box"/><text x="60" y="93" text-anchor="middle" font-size="12.5">Mobility</text>
+          <rect x="0" y="118" width="120" height="32" rx="16" class="box"/><text x="60" y="139" text-anchor="middle" font-size="12.5">Financial</text>
+          <rect x="0" y="164" width="120" height="32" rx="16" class="box"/><text x="60" y="185" text-anchor="middle" font-size="12.5">Ads</text>
+          <path d="M120 42 C160 42 160 100 196 104" class="ln" marker-end="url(#ah)"/>
+          <path d="M120 88 C160 88 160 108 196 108" class="ln" marker-end="url(#ah)"/>
+          <path d="M120 134 C160 134 160 114 196 114" class="ln" marker-end="url(#ah)"/>
+          <path d="M120 180 C160 180 160 120 196 118" class="ln" marker-end="url(#ah)"/>
+          <rect x="200" y="56" width="170" height="110" rx="14" class="box-ch"/>
+          <text x="285" y="104" text-anchor="middle" font-size="22" font-weight="700" class="disp tc">Coban</text>
+          <text x="285" y="128" text-anchor="middle" font-size="12.5" class="t2 vi">cổng tự phục vụ</text><text x="285" y="128" text-anchor="middle" font-size="12.5" class="t2 en">self-service portal</text>
+          <text x="285" y="146" text-anchor="middle" font-size="11" class="tm mono vi">không chờ đội hạ tầng</text><text x="285" y="146" text-anchor="middle" font-size="11" class="tm mono en">no waiting on infra team</text>
+          <rect x="430" y="8" width="208" height="200" rx="12" class="ln dash"/>
+          <text x="534" y="224" text-anchor="middle" font-size="11" class="mono tc" font-weight="700"><tspan class="vi">ĐỊNH NGHĨA BẰNG CODE (IaC)</tspan><tspan class="en">DEFINED AS CODE (IaC)</tspan></text>
+          <rect x="446" y="22" width="176" height="34" rx="8" class="box"/><text x="534" y="44" text-anchor="middle" font-size="13" class="mono">Kafka topic</text>
+          <rect x="446" y="68" width="176" height="34" rx="8" class="box"/><text x="534" y="90" text-anchor="middle" font-size="13" class="mono">Flink pipeline</text>
+          <rect x="446" y="114" width="176" height="34" rx="8" class="box"/><text x="534" y="136" text-anchor="middle" font-size="13" class="mono">CDC</text>
+          <rect x="446" y="160" width="176" height="34" rx="8" class="box"/><text x="534" y="182" text-anchor="middle" font-size="13" class="mono">Kafka Connect</text>
+          <path d="M370 100 C405 100 410 39 444 39" class="ln-ch flow"/>
+          <path d="M370 106 C405 106 410 85 444 85" class="ln-ch flow"/>
+          <path d="M370 116 C405 116 410 131 444 131" class="ln-ch flow"/>
+          <path d="M370 122 C405 122 410 177 444 177" class="ln-ch flow"/>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="card rise small" style="--i:4">
+          <span class="vi">Đội <b>Coban</b> của Grab xây nền tảng data streaming cho toàn công ty: các nhóm tự tạo Kafka topic, pipeline Flink, CDC (bắt thay đổi từ database), Kafka Connect — mà không cần chờ đội hạ tầng.</span>
+          <span class="en">Grab's <b>Coban</b> team built a company-wide data-streaming platform: teams create Kafka topics, Flink pipelines, CDC (change data capture) and Kafka Connect themselves — without waiting for the infrastructure team.</span><sup class="r">[14]</sup>
+        </div>
+        <div class="callout rise" style="--i:5">
+          <span class="vi">Ở quy mô lớn, streaming không còn là dự án riêng của một nhóm mà trở thành <b>hạ tầng dùng chung</b> — giống như điện, nước.</span>
+          <span class="en">At scale, streaming stops being one team's project and becomes <b>shared infrastructure</b> — like electricity or water.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="src">[14] Grab Engineering (11/2023), An elegant platform — <span class="vi">nhóm sản phẩm trong sơ đồ chỉ để minh hoạ</span><span class="en">teams in the diagram are illustrative</span></p>
+  <aside class="notes">
+    <p class="vi">Grab là ví dụ gần gũi với Việt Nam. Thông điệp: ở quy mô lớn, streaming không còn là dự án riêng của một nhóm mà trở thành hạ tầng dùng chung, giống như điện nước. Khoảng 5.000 tài nguyên được quản lý dưới dạng code; người dùng nội bộ tăng gần 4 lần; hơn 90% quy trình tự phục vụ thành công.</p>
+    <p class="en">Grab is a case close to home for Vietnam. Message: at scale, streaming is no longer one team's project but shared infrastructure, like utilities. About 5,000 resources managed as code; internal users up almost 4×; over 90% of self-service workflows succeed.</p>
+  </aside>
+</section>
+
+<!-- 3.3 KRUNGSRI -->
+<section class="slide" data-ch="3" data-sec="3.3" id="krungsri">
+  <h2><span class="vi">Krungsri (Thái Lan) — chặn lừa đảo <em>dưới 60 giây</em></span><span class="en">Krungsri (Thailand) — stopping fraud in <em>under 60 seconds</em></span></h2>
+  <div class="s-body">
+    <div class="card rise fig fig-scroll" style="--i:0;padding:14px 16px 8px">
+      <svg viewBox="0 0 1152 236" role="img" aria-label="Core mainframe, CDC, streaming platform, stream processing, cloud AI scoring, block transaction, all in under 60 seconds">
+        <path d="M198 54 V42 H1150 V54" class="ln-good"/>
+        <text x="674" y="32" text-anchor="middle" class="mono tg" font-size="14" font-weight="700"><tspan class="vi">&lt; 60 giây · phát hiện &amp; chặn</tspan><tspan class="en">&lt; 60 s · detect &amp; block</tspan></text>
+        <rect x="0" y="70" width="160" height="64" rx="10" class="box"/>
+        <text x="80" y="98" text-anchor="middle" font-size="14" font-weight="700">Mainframe</text>
+        <text x="80" y="118" text-anchor="middle" font-size="12" class="tm vi">hệ thống lõi</text><text x="80" y="118" text-anchor="middle" font-size="12" class="tm en">core banking</text>
+        <rect x="198" y="70" width="160" height="64" rx="10" class="box-ch"/>
+        <text x="278" y="98" text-anchor="middle" font-size="14" font-weight="700">CDC</text>
+        <text x="278" y="118" text-anchor="middle" font-size="12" class="t2 vi">bắt thay đổi</text><text x="278" y="118" text-anchor="middle" font-size="12" class="t2 en">change capture</text>
+        <rect x="396" y="70" width="160" height="64" rx="10" class="box-ch"/>
+        <text x="476" y="98" text-anchor="middle" font-size="14" font-weight="700" class="vi">Nền tảng</text><text x="476" y="98" text-anchor="middle" font-size="14" font-weight="700" class="en">Streaming</text>
+        <text x="476" y="118" text-anchor="middle" font-size="12" class="t2 vi">streaming</text><text x="476" y="118" text-anchor="middle" font-size="12" class="t2 en">platform</text>
+        <rect x="594" y="70" width="160" height="64" rx="10" class="box-ch"/>
+        <text x="674" y="98" text-anchor="middle" font-size="14" font-weight="700" class="vi">Xử lý luồng</text><text x="674" y="98" text-anchor="middle" font-size="14" font-weight="700" class="en">Stream processing</text>
+        <text x="674" y="118" text-anchor="middle" font-size="12" class="t2 vi">làm giàu, lọc</text><text x="674" y="118" text-anchor="middle" font-size="12" class="t2 en">enrich, filter</text>
+        <rect x="792" y="70" width="160" height="64" rx="10" class="box-ch"/>
+        <text x="872" y="98" text-anchor="middle" font-size="14" font-weight="700" class="vi">AI trên cloud</text><text x="872" y="98" text-anchor="middle" font-size="14" font-weight="700" class="en">Cloud AI model</text>
+        <text x="872" y="118" text-anchor="middle" font-size="12" class="t2 vi">chấm điểm rủi ro</text><text x="872" y="118" text-anchor="middle" font-size="12" class="t2 en">risk scoring</text>
+        <rect x="990" y="70" width="160" height="64" rx="10" class="box-good"/>
+        <text x="1070" y="98" text-anchor="middle" font-size="14" font-weight="700" class="tg vi">Chặn giao dịch</text><text x="1070" y="98" text-anchor="middle" font-size="14" font-weight="700" class="tg en">Block payment</text>
+        <text x="1070" y="118" text-anchor="middle" font-size="12" class="t2 vi">trước khi tiền đi</text><text x="1070" y="118" text-anchor="middle" font-size="12" class="t2 en">before money leaves</text>
+        <line x1="160" y1="102" x2="194" y2="102" class="ln-ch" marker-end="url(#ah-c3)"/>
+        <line x1="358" y1="102" x2="392" y2="102" class="ln-ch" marker-end="url(#ah-c3)"/>
+        <line x1="556" y1="102" x2="590" y2="102" class="ln-ch" marker-end="url(#ah-c3)"/>
+        <line x1="754" y1="102" x2="788" y2="102" class="ln-ch" marker-end="url(#ah-c3)"/>
+        <line x1="952" y1="102" x2="986" y2="102" class="ln-good" marker-end="url(#ah-good)"/>
+        <circle r="4.5" class="pkt glow"><animateMotion dur="3.4s" repeatCount="indefinite" path="M160 102 H990"/></circle>
+        <path d="M476 134 C476 160 400 160 396 182" class="ln dash" marker-end="url(#ah)"/>
+        <path d="M476 134 C476 160 552 160 556 182" class="ln dash" marker-end="url(#ah)"/>
+        <rect x="330" y="186" width="130" height="38" rx="9" class="box"/><text x="395" y="210" text-anchor="middle" font-size="12.5" class="t2 vi">Báo cáo</text><text x="395" y="210" text-anchor="middle" font-size="12.5" class="t2 en">Reporting</text>
+        <rect x="492" y="186" width="130" height="38" rx="9" class="box"/><text x="557" y="210" text-anchor="middle" font-size="12.5" class="t2 vi">Ứng dụng khác</text><text x="557" y="210" text-anchor="middle" font-size="12.5" class="t2 en">Other apps</text>
+        <text x="0" y="198" font-size="12.5" class="tm vi">Mainframe phát dữ liệu một lần,</text><text x="0" y="216" font-size="12.5" class="tm vi">nhiều ứng dụng cùng dùng</text>
+        <text x="0" y="198" font-size="12.5" class="tm en">The mainframe publishes once,</text><text x="0" y="216" font-size="12.5" class="tm en">many applications consume</text>
+      </svg>
+    </div>
+    <div class="g3 mt">
+      <div class="card hl kpi sm rise" style="--i:1"><div class="v">&lt; 60 s</div><div class="l"><span class="vi">phát hiện và chặn giao dịch gian lận</span><span class="en">to detect and block a fraudulent payment</span><sup class="r">[15]</sup></div></div>
+      <div class="card kpi sm rise" style="--i:2"><div class="v" style="font-size:30px;line-height:1.2"><span class="vi">4–6 tháng → 6–8 tuần</span><span class="en">4–6 mo → 6–8 wk</span></div><div class="l"><span class="vi">thời gian đưa dự án vào vận hành</span><span class="en">time to put the project into production</span><sup class="r">[15]</sup></div></div>
+      <div class="card kpi sm rise" style="--i:3"><div class="v" style="font-size:34px;line-height:1.18"><span class="vi">&gt;3,4 triệu</span><span class="en">&gt;3.4 million</span></div><div class="l"><span class="vi">Liên hệ Việt Nam: cảnh báo giao dịch đáng ngờ qua hệ thống NAPAS năm 2025</span><span class="en">Vietnam link: suspicious-transaction alerts via NAPAS in 2025</span><sup class="r">[16]</sup></div></div>
+    </div>
+  </div>
+  <p class="src">[15] Kai Waehner (10/2024), Fraud Prevention in Under 60 Seconds with Apache Kafka · [16] Tạp chí Kinh tế Tài chính</p>
+  <aside class="notes">
+    <p class="vi">Vấn đề: lừa đảo chuyển tiền sang tài khoản trung gian trong vòng 60 giây. Giải pháp: CDC lấy dữ liệu giao dịch từ mainframe lõi, đưa vào nền tảng streaming, xử lý luồng rồi gọi mô hình AI trên cloud để chấm điểm rủi ro. Chi tiết hay: ngân hàng không bỏ mainframe cũ mà gắn streaming vào, để mainframe chỉ phát dữ liệu một lần và nhiều ứng dụng cùng dùng — chuyển đổi dần, không đập đi xây lại.</p>
+    <p class="en">Problem: fraudsters move money to mule accounts within 60 seconds. Solution: CDC pulls transactions from the core mainframe into a streaming platform, stream processing enriches them and a cloud AI model scores the risk. Key point: the bank kept its mainframe and attached streaming to it, so the mainframe publishes once and many apps consume — gradual change, not a rewrite.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     CHAPTER 4 — WHEN NOT?
+     ===================================================== -->
+<section class="slide divider" data-ch="4" id="ch4" data-toc-vi="04 — Khi nào KHÔNG nên?" data-toc-en="04 — When NOT to?">
+  <div class="stream"><i style="--d:0"></i><i style="--d:1.1"></i><i style="--d:2.2"></i></div>
+  <div class="big">04</div>
+  <div class="d-kicker"><span class="vi">Câu hỏi 4</span><span class="en">Question 4</span></div>
+  <h2><span class="vi">Khi nào KHÔNG nên?</span><span class="en">When NOT to?</span></h2>
+  <p class="lede"><span class="vi">Real-time và edge không phải viên đạn bạc — đây là mặt trái.</span><span class="en">Real-time and edge are not a silver bullet — here is the other side.</span></p>
+  <ol>
+    <li><b>4.1</b><span class="vi">Prime Video giảm 90% chi phí khi bỏ serverless</span><span class="en">Prime Video cut costs 90% by leaving serverless</span></li>
+    <li><b>4.2</b><span class="vi">Edge không phải lúc nào cũng nhanh hơn</span><span class="en">The edge is not always faster</span></li>
+    <li><b>4.3</b><span class="vi">Thách thức kỹ thuật cụ thể</span><span class="en">Concrete engineering challenges</span></li>
+  </ol>
+</section>
+
+<!-- 4.1 PRIME VIDEO -->
+<section class="slide" data-ch="4" data-sec="4.1" id="prime">
+  <h2><span class="vi">Prime Video <em>giảm 90% chi phí</em> khi bỏ serverless</span><span class="en">Prime Video <em>cut costs by 90%</em> by leaving serverless</span></h2>
+  <div class="s-body">
+    <div class="g2">
+      <div class="card rise fig" style="--i:0;--ch:var(--bad);padding-bottom:12px">
+        <span class="label c"><span class="vi">Trước · nhiều thành phần serverless</span><span class="en">Before · many serverless parts</span></span>
+        <svg viewBox="0 0 420 206" role="img" aria-label="Step Functions orchestrating Lambdas that pass data through S3">
+          <rect x="0" y="2" width="420" height="32" rx="8" class="box"/>
+          <text x="210" y="23" text-anchor="middle" font-size="12.5" font-weight="600">AWS Step Functions · <tspan class="vi">điều phối</tspan><tspan class="en">orchestration</tspan></text>
+          <line x1="62" y1="34" x2="62" y2="66" class="ln dash" marker-end="url(#ah)"/>
+          <line x1="210" y1="34" x2="210" y2="66" class="ln dash" marker-end="url(#ah)"/>
+          <line x1="358" y1="34" x2="358" y2="66" class="ln dash" marker-end="url(#ah)"/>
+          <rect x="0" y="70" width="124" height="42" rx="9" class="box"/>
+          <rect x="148" y="70" width="124" height="42" rx="9" class="box"/>
+          <rect x="296" y="70" width="124" height="42" rx="9" class="box"/>
+          <text x="62" y="96" text-anchor="middle" font-size="12.5" class="vi">λ Chuyển đổi</text><text x="62" y="96" text-anchor="middle" font-size="12.5" class="en">λ Converter</text>
+          <text x="210" y="96" text-anchor="middle" font-size="12.5" class="vi">λ Phát hiện lỗi</text><text x="210" y="96" text-anchor="middle" font-size="12.5" class="en">λ Detector</text>
+          <text x="358" y="96" text-anchor="middle" font-size="12.5" class="vi">λ Phát hiện lỗi</text><text x="358" y="96" text-anchor="middle" font-size="12.5" class="en">λ Detector</text>
+          <line x1="72" y1="114" x2="156" y2="158" class="ln-bad" marker-start="url(#ah-bad)" marker-end="url(#ah-bad)"/>
+          <line x1="210" y1="114" x2="210" y2="156" class="ln-bad" marker-start="url(#ah-bad)" marker-end="url(#ah-bad)"/>
+          <line x1="348" y1="114" x2="264" y2="158" class="ln-bad" marker-start="url(#ah-bad)" marker-end="url(#ah-bad)"/>
+          <rect x="130" y="162" width="160" height="40" rx="9" class="box-bad"/>
+          <text x="210" y="187" text-anchor="middle" font-size="12.5" class="vi">S3 · dữ liệu trung gian</text><text x="210" y="187" text-anchor="middle" font-size="12.5" class="en">S3 · intermediate data</text>
+        </svg>
+      </div>
+      <div class="card rise fig" style="--i:1;--ch:var(--good);padding-bottom:12px">
+        <span class="label c"><span class="vi">Sau · một tiến trình</span><span class="en">After · one process</span></span>
+        <svg viewBox="0 0 420 206" role="img" aria-label="All components merged into one process on EC2 or ECS, data passed in memory">
+          <rect x="0" y="2" width="420" height="200" rx="16" class="box-good"/>
+          <text x="20" y="32" font-size="13.5" font-weight="700" class="tg"><tspan class="vi">1 tiến trình · EC2 / ECS</tspan><tspan class="en">1 process · EC2 / ECS</tspan></text>
+          <rect x="18" y="78" width="114" height="46" rx="9" class="box"/>
+          <rect x="153" y="78" width="114" height="46" rx="9" class="box"/>
+          <rect x="288" y="78" width="114" height="46" rx="9" class="box"/>
+          <text x="75" y="106" text-anchor="middle" font-size="12.5" class="vi">Chuyển đổi</text><text x="75" y="106" text-anchor="middle" font-size="12.5" class="en">Converter</text>
+          <text x="210" y="106" text-anchor="middle" font-size="12.5" class="vi">Phát hiện lỗi</text><text x="210" y="106" text-anchor="middle" font-size="12.5" class="en">Detector</text>
+          <text x="345" y="106" text-anchor="middle" font-size="12.5" class="vi">Phát hiện lỗi</text><text x="345" y="106" text-anchor="middle" font-size="12.5" class="en">Detector</text>
+          <line x1="132" y1="101" x2="150" y2="101" class="ln-good" marker-end="url(#ah-good)"/>
+          <line x1="267" y1="101" x2="285" y2="101" class="ln-good" marker-end="url(#ah-good)"/>
+          <text x="210" y="166" text-anchor="middle" font-size="12.5" class="mono tg vi">dữ liệu đi trong bộ nhớ</text><text x="210" y="166" text-anchor="middle" font-size="12.5" class="mono tg en">data passed in memory</text>
+        </svg>
+      </div>
+    </div>
+    <div class="g3 mt" style="grid-template-columns:3fr 4fr 5fr">
+      <div class="card hl kpi rise" style="--i:2"><div class="v">−90%</div><div class="l"><span class="vi">chi phí sau khi gộp vào một tiến trình</span><span class="en">cost after merging into one process</span><sup class="r">[10]</sup></div></div>
+      <div class="card rise small" style="--i:3">
+        <span class="label" style="color:var(--bad);margin-bottom:4px"><span class="vi">Vấn đề</span><span class="en">The problem</span></span>
+        <span class="vi">Chạm giới hạn mở rộng ở khoảng <b>5% tải dự kiến</b>; dữ liệu phải truyền qua lại giữa các thành phần nên chi phí rất cao.</span>
+        <span class="en">Hit a scaling limit at about <b>5% of expected load</b>; data had to move back and forth between components, so cost was very high.</span><sup class="r">[10]</sup>
+      </div>
+      <div class="callout rise small" style="--i:4">
+        <span class="vi"><b>Bài học:</b> serverless hợp với lưu lượng thất thường, nhiều sự kiện nhỏ. Khối lượng lớn, đều đặn, chuyển nhiều dữ liệu giữa các bước → một tiến trình chạy liên tục có thể rẻ hơn nhiều. Chọn theo từng trường hợp.</span>
+        <span class="en"><b>Lesson:</b> serverless fits spiky traffic and many small events. Large, steady workloads moving lots of data between steps → a long-running process can be far cheaper. Choose case by case.</span>
+      </div>
+    </div>
+  </div>
+  <p class="src">[10] The New Stack (05/2023), Return of the Monolith: Amazon Dumps Microservices for Video Monitoring</p>
+  <aside class="notes">
+    <p class="vi">Hệ thống giám sát chất lượng video của Prime Video ban đầu gồm nhiều thành phần serverless (Step Functions + Lambda). Nó chạm giới hạn mở rộng ở khoảng 5% tải dự kiến và tốn kém vì dữ liệu chuyển qua lại. Gộp vào một tiến trình trên EC2/ECS giảm 90% chi phí. Chính tác giả bài viết cũng nhấn mạnh phải chọn theo từng trường hợp.</p>
+    <p class="en">Prime Video's video-quality monitoring started as many serverless parts (Step Functions + Lambda). It hit a scaling limit at about 5% of expected load and was expensive because data moved between steps. Merging into one process on EC2/ECS cut costs by 90%. The authors themselves stress choosing case by case.</p>
+  </aside>
+</section>
+
+<!-- 4.2 DATA LOCALITY -->
+<section class="slide" data-ch="4" data-sec="4.2" id="locality">
+  <h2><span class="vi">Edge <em>không phải lúc nào</em> cũng nhanh hơn</span><span class="en">The edge is <em>not always</em> faster</span></h2>
+  <div class="s-body g-6-4">
+    <div class="card rise fig" style="--i:0">
+      <svg viewBox="0 0 700 312" role="img" aria-label="Sequence diagrams: A, the edge calls a distant database three times; B, the edge writes once to a queue">
+        <!-- A -->
+        <text x="0" y="14" font-size="15" font-weight="700" class="tb"><tspan class="vi">A · Logic gọi database ở xa</tspan><tspan class="en">A · Logic calls a distant database</tspan></text>
+        <rect x="10" y="26" width="90" height="30" rx="7" class="box"/><text x="55" y="46" text-anchor="middle" font-size="13" class="vi">Người dùng</text><text x="55" y="46" text-anchor="middle" font-size="13" class="en">User</text>
+        <rect x="120" y="26" width="90" height="30" rx="7" class="box-ch" style="--ch:var(--c2)"/><text x="165" y="46" text-anchor="middle" font-size="13" class="mono">Edge·SGN</text>
+        <rect x="320" y="26" width="104" height="30" rx="7" class="box"/><text x="372" y="46" text-anchor="middle" font-size="13" class="vi">Database · Mỹ</text><text x="372" y="46" text-anchor="middle" font-size="13" class="en">Database · US</text>
+        <line x1="55" y1="56" x2="55" y2="292" class="ln dash"/><line x1="165" y1="56" x2="165" y2="292" class="ln dash"/><line x1="372" y1="56" x2="372" y2="292" class="ln dash"/>
+        <line x1="55" y1="70" x2="163" y2="78" class="ln-ink" marker-end="url(#ah-ink)"/>
+        <line x1="165" y1="84" x2="370" y2="110" class="ln-bad" marker-end="url(#ah-bad)"/>
+        <line x1="372" y1="114" x2="167" y2="140" class="ln-bad" marker-end="url(#ah-bad)"/>
+        <line x1="165" y1="146" x2="370" y2="172" class="ln-bad" marker-end="url(#ah-bad)"/>
+        <line x1="372" y1="176" x2="167" y2="202" class="ln-bad" marker-end="url(#ah-bad)"/>
+        <line x1="165" y1="208" x2="370" y2="234" class="ln-bad" marker-end="url(#ah-bad)"/>
+        <line x1="372" y1="238" x2="167" y2="264" class="ln-bad" marker-end="url(#ah-bad)"/>
+        <line x1="165" y1="270" x2="57" y2="278" class="ln-ink" marker-end="url(#ah-ink)"/>
+        <text x="388" y="116" class="mono tb" font-size="13" font-weight="700">1</text><text x="388" y="178" class="mono tb" font-size="13" font-weight="700">2</text><text x="388" y="240" class="mono tb" font-size="13" font-weight="700">3</text>
+        <text x="215" y="308" text-anchor="middle" font-size="13.5" class="tb vi">3 vòng đi về qua nửa vòng Trái Đất</text><text x="215" y="308" text-anchor="middle" font-size="13.5" class="tb en">3 round trips across half the planet</text>
+        <!-- time axis -->
+        <line x1="0" y1="70" x2="0" y2="284" class="ln" marker-end="url(#ah)"/>
+        <!-- B -->
+        <text x="456" y="14" font-size="15" font-weight="700" class="tg"><tspan class="vi">B · Edge chỉ thu nhận</tspan><tspan class="en">B · Edge only ingests</tspan></text>
+        <rect x="456" y="26" width="76" height="30" rx="7" class="box"/><text x="494" y="46" text-anchor="middle" font-size="13" class="vi">Người dùng</text><text x="494" y="46" text-anchor="middle" font-size="13" class="en">User</text>
+        <rect x="540" y="26" width="76" height="30" rx="7" class="box-ch" style="--ch:var(--c2)"/><text x="578" y="46" text-anchor="middle" font-size="13" class="mono">Edge·SGN</text>
+        <rect x="624" y="26" width="76" height="30" rx="7" class="box"/><text x="662" y="46" text-anchor="middle" font-size="13" class="vi">Hàng đợi</text><text x="662" y="46" text-anchor="middle" font-size="13" class="en">Queue</text>
+        <line x1="494" y1="56" x2="494" y2="292" class="ln dash"/><line x1="578" y1="56" x2="578" y2="292" class="ln dash"/><line x1="662" y1="56" x2="662" y2="292" class="ln dash"/>
+        <line x1="494" y1="70" x2="576" y2="78" class="ln-ink" marker-end="url(#ah-ink)"/>
+        <line x1="578" y1="82" x2="660" y2="90" class="ln-good" marker-end="url(#ah-good)"/>
+        <line x1="662" y1="94" x2="580" y2="102" class="ln-good" marker-end="url(#ah-good)"/>
+        <line x1="578" y1="106" x2="496" y2="114" class="ln-ink" marker-end="url(#ah-ink)"/>
+        <rect x="470" y="128" width="216" height="0.1" class="ln"/>
+        <text x="578" y="150" text-anchor="middle" font-size="13.5" class="tg vi">trả lời ngay sau 1 lần ghi</text><text x="578" y="150" text-anchor="middle" font-size="13.5" class="tg en">answers after a single write</text>
+        <line x1="662" y1="164" x2="662" y2="232" class="ln-ink dash" marker-end="url(#ah-ink)"/>
+        <text x="652" y="252" text-anchor="end" font-size="13" class="tm vi">xử lý phía sau,</text><text x="652" y="268" text-anchor="end" font-size="13" class="tm vi">đặt gần dữ liệu</text>
+        <text x="652" y="252" text-anchor="end" font-size="13" class="tm en">processed later,</text><text x="652" y="268" text-anchor="end" font-size="13" class="tm en">close to the data</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="card rise small" style="--i:1">
+        <h3>Smart Placement · Cloudflare</h3>
+        <span class="vi">Tự phân tích các lời gọi ra ngoài của Worker và chọn chạy Worker ở vị trí tối ưu — có thể là <b>gần database</b> thay vì gần người dùng.</span>
+        <span class="en">Analyses a Worker's outbound calls and runs it at the best location — which may be <b>near the database</b> rather than near the user.</span><sup class="r">[12]</sup>
+      </div>
+      <div class="card rise small" style="--i:2">
+        <h3>Vercel · 06/2025</h3>
+        <span class="vi">Ngừng khuyến nghị Edge Functions cho dự án mới, chuyển sang Vercel Functions dùng runtime Node.js và Fluid compute.</span>
+        <span class="en">Stopped recommending Edge Functions for new projects in favour of Vercel Functions on the Node.js runtime with Fluid compute.</span><sup class="r">[11]</sup>
+      </div>
+      <div class="callout rise small" style="--i:3">
+        <span class="vi">Edge tốt nhất cho việc <b>nhẹ, ít phụ thuộc dữ liệu tập trung</b>: validate, gắn thông tin, đẩy vào hàng đợi. Logic cần nhiều dữ liệu nên <b>đặt gần dữ liệu</b>.</span>
+        <span class="en">The edge is best for <b>light work that needs little central data</b>: validate, enrich, enqueue. Data-heavy logic belongs <b>next to the data</b>.</span>
+      </div>
+    </div>
+  </div>
+  <p class="src"><span class="vi">Sơ đồ minh hoạ, không theo tỉ lệ</span><span class="en">Illustrative diagram, not to scale</span> · [11] Vercel Changelog (06/2025) · [12] Cloudflare Docs, Workers Placement</p>
+  <aside class="notes">
+    <p class="vi">Vấn đề “data locality”: code chạy sát người dùng nhưng database lại ở xa. Nếu mỗi request phải gọi database nhiều lần, mỗi lần là một vòng đi về qua nửa Trái Đất — tổng thời gian còn chậm hơn chạy code ngay cạnh database (sơ đồ A). Edge tốt nhất cho việc thu nhận: validate, gắn thông tin, đẩy vào hàng đợi (sơ đồ B). Đây là điểm giúp bài thuyết trình có chiều sâu.</p>
+    <p class="en">The data-locality problem: code runs next to the user but the database is far away. If each request calls the database several times, every call is a round trip across half the planet — slower overall than running next to the database (diagram A). The edge shines at ingestion: validate, enrich, enqueue (diagram B).</p>
+  </aside>
+</section>
+
+<!-- 4.3 CHALLENGES -->
+<section class="slide" data-ch="4" data-sec="4.3" id="challenges">
+  <h2><span class="vi">Thách thức kỹ thuật — cụ thể</span><span class="en">Engineering challenges — concretely</span></h2>
+  <div class="s-body">
+    <table class="tbl sm stagger">
+      <thead><tr><th style="width:19%"><span class="vi">Thách thức</span><span class="en">Challenge</span></th><th style="width:41%"><span class="vi">Cụ thể</span><span class="en">In practice</span></th><th class="c"><span class="vi">Hướng giải quyết</span><span class="en">Mitigation</span></th></tr></thead>
+      <tbody>
+        <tr style="--i:0"><td><span class="vi">Giới hạn tài nguyên</span><span class="en">Resource limits</span></td><td><span class="vi">Workers: 128MB/isolate, CPU 10ms ở gói Free</span><span class="en">Workers: 128 MB per isolate, 10 ms CPU on Free</span><sup class="r">[6]</sup></td><td><span class="vi">Edge chỉ làm việc nhẹ; việc nặng đẩy về hàng đợi / xử lý phía sau</span><span class="en">Keep edge work light; push heavy work to a queue / back end</span></td></tr>
+        <tr style="--i:1"><td>Stateless</td><td><span class="vi">Isolate có thể bị thu hồi bất cứ lúc nào, không nên dựa vào biến toàn cục</span><span class="en">An isolate can be evicted at any time; don't rely on global variables</span><sup class="r">[5]</sup></td><td><span class="vi">Durable Objects: đơn vị tính toán có trạng thái, kèm SQLite và WebSocket</span><span class="en">Durable Objects: stateful compute units with SQLite and WebSockets</span><sup class="r">[20]</sup></td></tr>
+        <tr style="--i:2"><td><span class="vi">Thứ tự &amp; trùng lặp</span><span class="en">Ordering &amp; duplicates</span></td><td><span class="vi">Sự kiện có thể đến muộn, đến hai lần, sai thứ tự</span><span class="en">Events can arrive late, twice, or out of order</span></td><td><span class="vi">Thiết kế xử lý idempotent, dùng ID sự kiện, cửa sổ thời gian</span><span class="en">Idempotent handlers, event IDs, time windows</span></td></tr>
+        <tr style="--i:3"><td><span class="vi">Chi phí ẩn</span><span class="en">Hidden costs</span></td><td><span class="vi">Cold start bị tính tiền trên Lambda từ 8/2025; trường hợp Prime Video</span><span class="en">Lambda cold starts billed since 8/2025; the Prime Video case</span><sup class="r">[9, 10]</sup></td><td><span class="vi">Đo lường trước khi chọn; lưu lượng đều và lớn thì cân nhắc server thường</span><span class="en">Measure before choosing; for large steady load consider plain servers</span></td></tr>
+        <tr style="--i:4"><td><span class="vi">Quan sát, debug</span><span class="en">Observability</span></td><td><span class="vi">Một sự kiện đi qua 5 hệ thống khác nhau</span><span class="en">One event crosses five different systems</span></td><td><span class="vi">Tracing phân tán, log có ID sự kiện xuyên suốt</span><span class="en">Distributed tracing; logs carry the event ID end to end</span></td></tr>
+        <tr style="--i:5"><td>Vendor lock-in</td><td><span class="vi">Mỗi hãng có API riêng</span><span class="en">Every vendor has its own API</span></td><td><span class="vi">Chuẩn mở: CloudEvents, Kafka, Iceberg</span><span class="en">Open standards: CloudEvents, Kafka, Iceberg</span><sup class="r">[22]</sup></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="src">[5] How Workers works · [6] Workers Limits · [9] AWS Compute Blog · [10] The New Stack · [20] Cloudflare Durable Objects · [22] TFIR</p>
+  <aside class="notes">
+    <p class="vi">Đi nhanh qua sáu thách thức, mỗi cái kèm hướng giải quyết. Nhấn mạnh hai điểm: xử lý phải idempotent vì sự kiện có thể đến hai lần hoặc sai thứ tự; và dùng chuẩn mở (CloudEvents, Kafka, Iceberg) để giảm phụ thuộc vào một nhà cung cấp.</p>
+    <p class="en">Walk quickly through the six challenges and their mitigations. Stress two: handlers must be idempotent because events can arrive twice or out of order; and open standards (CloudEvents, Kafka, Iceberg) reduce vendor lock-in.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     CHAPTER 5 — WHERE NEXT?
+     ===================================================== -->
+<section class="slide divider" data-ch="5" id="ch5" data-toc-vi="05 — Đi về đâu?" data-toc-en="05 — Where is it heading?">
+  <div class="stream"><i style="--d:0"></i><i style="--d:1.1"></i><i style="--d:2.2"></i></div>
+  <div class="big">05</div>
+  <div class="d-kicker"><span class="vi">Câu hỏi 5</span><span class="en">Question 5</span></div>
+  <h2><span class="vi">Đi về đâu?</span><span class="en">Where is it heading?</span></h2>
+  <p class="lede"><span class="vi">Riêng năm 2025 đã có rất nhiều thay đổi lớn.</span><span class="en">2025 alone brought a lot of big changes.</span></p>
+  <ol>
+    <li><b>5.1</b><span class="vi">Dòng thời gian: từ batch đến real-time</span><span class="en">Timeline: from batch to real-time</span></li>
+    <li><b>5.2</b><span class="vi">Bảy xu hướng 2025–2026</span><span class="en">Seven trends for 2025–2026</span></li>
+  </ol>
+</section>
+
+<!-- 5.1 TIMELINE -->
+<section class="slide" data-ch="5" data-sec="5.1" id="timeline">
+  <h2><span class="vi">Dòng thời gian: từ batch đến real-time</span><span class="en">Timeline: from batch to real-time</span></h2>
+  <div class="s-body">
+    <div class="tl">
+      <span class="band"><span><span class="vi">2025 · bốn thay đổi lớn</span><span class="en">2025 · four big shifts</span></span></span>
+      <div class="ev up rise" style="--i:0"><span class="dot"></span><div class="lbl"><b>2006</b><span class="vi">Hadoop ra đời: kỷ nguyên xử lý batch dữ liệu lớn</span><span class="en">Hadoop is born: the era of big-data batch processing</span></div></div>
+      <div class="ev down rise" style="--i:1"><span class="dot"></span><div class="lbl"><b>2011</b><span class="vi">LinkedIn mở mã nguồn Apache Kafka</span><span class="en">LinkedIn open-sources Apache Kafka</span></div></div>
+      <div class="ev up rise" style="--i:2"><span class="dot"></span><div class="lbl"><b>2014</b><span class="vi">AWS Lambda ra mắt; Jay Kreps đặt câu hỏi về kiến trúc Lambda</span><span class="en">AWS Lambda launches; Jay Kreps questions the Lambda architecture</span><sup class="r">[17]</sup></div></div>
+      <div class="ev down rise" style="--i:3"><span class="dot"></span><div class="lbl"><b>2017</b><span class="vi">Cloudflare Workers ra mắt: serverless tại edge</span><span class="en">Cloudflare Workers launch: serverless at the edge</span></div></div>
+      <div class="ev up rise" style="--i:4"><span class="dot"></span><div class="lbl"><b>01/2024</b><span class="vi">CloudEvents tốt nghiệp CNCF</span><span class="en">CloudEvents graduates from the CNCF</span><sup class="r">[22]</sup></div></div>
+      <div class="ev down key rise" style="--i:5"><span class="dot"></span><div class="lbl"><b>03/2025</b><span class="vi">Kafka 4.0 bỏ hẳn ZooKeeper, chỉ dùng KRaft</span><span class="en">Kafka 4.0 drops ZooKeeper entirely, KRaft only</span><sup class="r">[18]</sup></div></div>
+      <div class="ev up key rise" style="--i:6"><span class="dot"></span><div class="lbl"><b>06/2025</b><span class="vi">Vercel ngừng khuyến nghị Edge Functions cho dự án mới</span><span class="en">Vercel stops recommending Edge Functions for new projects</span><sup class="r">[11]</sup></div></div>
+      <div class="ev down key rise" style="--i:7"><span class="dot"></span><div class="lbl"><b>08/2025</b><span class="vi">AWS tính tiền phần khởi tạo (INIT) của Lambda</span><span class="en">AWS starts billing Lambda's INIT phase</span><sup class="r">[9]</sup></div></div>
+      <div class="ev up key rise" style="--i:8"><span class="dot"></span><div class="lbl"><b>09/2025</b><span class="vi">Cloudflare Data Platform: pipeline + Iceberg + SQL ngay trên edge</span><span class="en">Cloudflare Data Platform: pipelines + Iceberg + SQL on the edge</span><sup class="r">[8]</sup></div></div>
+      <div class="ev down rise" style="--i:9"><span class="dot"></span><div class="lbl"><b>02/2026</b><span class="vi">IDC dự báo chi tiêu edge gần 450 tỷ USD vào 2029</span><span class="en">IDC forecasts edge spending near USD 450 bn by 2029</span><sup class="r">[1]</sup></div></div>
+    </div>
+  </div>
+  <p class="src"><span class="vi">Khoảng cách trên trục không theo tỉ lệ thời gian</span><span class="en">Axis spacing is not to scale</span> · [1] IDC · [8] DBTA · [9] AWS · [11] Vercel · [17] InfoQ · [18] SoftwareMill · [22] TFIR</p>
+  <aside class="notes">
+    <p class="vi">Đi từ trái sang phải: 2006 Hadoop mở kỷ nguyên batch; 2011 Kafka; 2014 Lambda và câu hỏi của Kreps; 2017 Workers mang serverless ra edge. Vùng tô màu cho thấy tốc độ thay đổi: riêng năm 2025 đã có bốn thay đổi lớn — Kafka 4.0, Vercel rút lui khỏi Edge Functions, AWS tính tiền INIT, Cloudflare Data Platform.</p>
+    <p class="en">Read left to right: 2006 Hadoop opens the batch era; 2011 Kafka; 2014 Lambda and Kreps' question; 2017 Workers bring serverless to the edge. The shaded band shows the pace of change: 2025 alone had four big shifts — Kafka 4.0, Vercel stepping back from Edge Functions, AWS billing INIT, Cloudflare Data Platform.</p>
+  </aside>
+</section>
+
+<!-- 5.2 TRENDS -->
+<section class="slide" data-ch="5" data-sec="5.2" id="trends">
+  <h2><span class="vi">Bảy xu hướng 2025–2026</span><span class="en">Seven trends for 2025–2026</span></h2>
+  <div class="s-body">
+    <div class="g4" style="grid-template-rows:1fr 1fr;height:100%;max-height:520px">
+      <div class="card hl trend rise" style="--i:0"><span class="n">01 <span class="chip c"><span class="vi">trọng tâm</span><span class="en">key</span></span></span><h3><span class="vi">Streaming hội tụ với lakehouse</span><span class="en">Streaming meets the lakehouse</span></h3><p><span class="vi">Sự kiện ghi thẳng thành bảng Apache Iceberg — vừa dùng real-time vừa phân tích được như kho dữ liệu, xoá ranh giới batch/stream.</span><span class="en">Events land directly as Apache Iceberg tables — usable in real time and analysable like a warehouse, blurring batch vs stream.</span><sup class="r">[8]</sup></p></div>
+      <div class="card trend rise" style="--i:1"><span class="n">02</span><h3><span class="vi">Hạ tầng streaming đơn giản hơn</span><span class="en">Simpler streaming infrastructure</span></h3><p><span class="vi">Kafka 4.0 bỏ ZooKeeper; thêm “Queues for Kafka” (thử nghiệm) cho kiểu xử lý hàng đợi.</span><span class="en">Kafka 4.0 drops ZooKeeper and adds “Queues for Kafka” (preview) for queue-style processing.</span><sup class="r">[18]</sup></p></div>
+      <div class="card trend rise" style="--i:2"><span class="n">03</span><h3><span class="vi">Flink 2.0 tách trạng thái</span><span class="en">Flink 2.0 disaggregates state</span></h3><p><span class="vi">Trạng thái lưu ở bộ nhớ từ xa (disaggregated state), hợp môi trường cloud-native; trình bày tại VLDB 2025.</span><span class="en">State lives in remote storage (disaggregated state), a better fit for cloud-native setups; presented at VLDB 2025.</span><sup class="r">[19]</sup></p></div>
+      <div class="card hl trend rise" style="--i:3"><span class="n">04 <span class="chip c"><span class="vi">trọng tâm</span><span class="en">key</span></span></span><h3><span class="vi">AI cần dữ liệu thời gian thực</span><span class="en">AI needs real-time data</span></h3><p><span class="vi"><b>87%</b> lãnh đạo IT kỳ vọng streaming sẽ được dùng nhiều hơn để cấp dữ liệu cho hệ thống AI.</span><span class="en"><b>87%</b> of IT leaders expect streaming to be used more to feed AI systems.</span><sup class="r">[2]</sup></p></div>
+      <div class="card hl trend rise" style="--i:4"><span class="n">05 <span class="chip c"><span class="vi">trọng tâm</span><span class="en">key</span></span></span><h3><span class="vi">AI inference tại edge</span><span class="en">AI inference at the edge</span></h3><p><span class="vi">Workers AI có GPU tại hơn 180 thành phố (09/2024); từ 09/2025 có mô hình chạy cục bộ tại Đông Nam Á.</span><span class="en">Workers AI had GPUs in 180+ cities (09/2024); since 09/2025 some models run locally in Southeast Asia.</span><sup class="r">[21, 7]</sup></p></div>
+      <div class="card trend rise" style="--i:5"><span class="n">06</span><h3><span class="vi">Edge có trạng thái</span><span class="en">Stateful edge</span></h3><p><span class="vi">Durable Objects cho phép chat, cộng tác thời gian thực, game nhiều người ngay trên edge.</span><span class="en">Durable Objects enable chat, real-time collaboration and multiplayer games right on the edge.</span><sup class="r">[20]</sup></p></div>
+      <div class="card trend rise" style="--i:6"><span class="n">07</span><h3>Streaming database</h3><p><span class="vi">Viết SQL một lần, kết quả tự cập nhật liên tục khi dữ liệu mới đến (RisingWave, Materialize).</span><span class="en">Write SQL once and results keep updating as new data arrives (RisingWave, Materialize).</span><sup class="r">[23]</sup></p></div>
+      <div class="card trend sum rise" style="--i:7"><span class="n">→</span><h3><span class="vi">Hội tụ, không phải thay thế</span><span class="en">Convergence, not replacement</span></h3><p><span class="vi">Batch không biến mất; ranh giới batch/stream và cloud/edge đang mờ dần.</span><span class="en">Batch is not going away; the lines between batch/stream and cloud/edge are fading.</span></p></div>
+    </div>
+  </div>
+  <p class="src">[2] Confluent · [7] Cloudflare 2025 · [8] DBTA · [18] SoftwareMill · [19] Mei et al., VLDB 2025 · [20] Durable Objects · [21] Business Wire 09/2024 · [23] RisingWave</p>
+  <aside class="notes">
+    <p class="vi">Nếu thiếu thời gian, tập trung vào ba xu hướng được đánh dấu: streaming hội tụ với lakehouse, AI cần dữ liệu real-time, và AI inference tại edge. Ô cuối tóm lại tinh thần chung: hội tụ chứ không thay thế.</p>
+    <p class="en">If short on time, focus on the three highlighted trends: streaming meets the lakehouse, AI needs real-time data, and AI inference at the edge. The last tile sums it up: convergence, not replacement.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
+     WRAP-UP
+     ===================================================== -->
+<section class="slide" data-ch="e" data-sec="end" id="conclusion">
+  <h2><span class="vi">Kết luận: <em>khi nào</em> nên dùng?</span><span class="en">Conclusion: <em>when</em> should you use it?</span></h2>
+  <div class="s-body g-7-5">
+    <table class="tbl stagger">
+      <thead><tr><th style="width:50%;color:var(--good)"><span class="vi">✓ Nên dùng event-driven + edge khi</span><span class="en">✓ Use event-driven + edge when</span></th><th style="color:var(--warn)"><span class="vi">✕ Nên cân nhắc lại khi</span><span class="en">✕ Think twice when</span></th></tr></thead>
+      <tbody>
+        <tr style="--i:0"><td><span class="vi">Giá trị dữ liệu giảm nhanh theo thời gian (gian lận, giá, cảnh báo)</span><span class="en">Data loses value fast (fraud, pricing, alerts)</span></td><td><span class="vi">Báo cáo định kỳ, độ trễ vài giờ vẫn chấp nhận được</span><span class="en">Periodic reports where hours of delay are fine</span></td></tr>
+        <tr style="--i:1"><td><span class="vi">Lưu lượng thất thường, có đỉnh đột biến (flash sale)</span><span class="en">Spiky traffic with sudden peaks (flash sales)</span></td><td><span class="vi">Lưu lượng lớn, đều đặn, chạy liên tục (bài học Prime Video)</span><span class="en">Large, steady, always-on load (the Prime Video lesson)</span></td></tr>
+        <tr style="--i:2"><td><span class="vi">Xử lý nhẹ, độc lập: validate, enrich, định tuyến</span><span class="en">Light, independent work: validate, enrich, route</span></td><td><span class="vi">Logic cần gọi database tập trung nhiều lần (data locality)</span><span class="en">Logic that calls a central database many times (data locality)</span></td></tr>
+        <tr style="--i:3"><td><span class="vi">Người dùng phân tán khắp nơi</span><span class="en">Users spread all over the world</span></td><td><span class="vi">Tác vụ nặng CPU/RAM như huấn luyện mô hình</span><span class="en">CPU/RAM-heavy jobs such as model training</span></td></tr>
+      </tbody>
+    </table>
+    <div class="col-gap" style="--ch:var(--accent)">
+      <span class="label c rise" style="--i:4;margin:0"><span class="vi">Ba điều cần nhớ</span><span class="en">Three takeaways</span></span>
+      <div class="take rise" style="--i:5"><span class="n">1</span><p><span class="vi"><b>Dữ liệu có hạn sử dụng:</b> xử lý càng sớm, giá trị càng cao.</span><span class="en"><b>Data has an expiry date:</b> the sooner you process it, the more it is worth.</span></p></div>
+      <div class="take rise" style="--i:6"><span class="n">2</span><div><p><span class="vi">Edge làm tầng <b>thu nhận</b>, hàng đợi làm tầng <b>đệm</b>, xử lý đặt <b>gần dữ liệu</b>.</span><span class="en">Edge for <b>ingestion</b>, queue as the <b>buffer</b>, processing <b>next to the data</b>.</span></p>
+        <div class="chips mt-s"><span class="chip c">Edge</span><span class="muted">→</span><span class="chip c"><span class="vi">Hàng đợi</span><span class="en">Queue</span></span><span class="muted">→</span><span class="chip c"><span class="vi">Xử lý</span><span class="en">Process</span></span><span class="muted">≈</span><span class="chip">DB</span></div></div></div>
+      <div class="take rise" style="--i:7"><span class="n">3</span><p><span class="vi"><b>Batch không biến mất;</b> xu hướng là hội tụ, không phải thay thế.</span><span class="en"><b>Batch is not going away;</b> the trend is convergence, not replacement.</span></p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p class="vi">Bảng trái là tiêu chí chọn: dùng khi giá trị dữ liệu giảm nhanh, lưu lượng thất thường, xử lý nhẹ và người dùng phân tán; cân nhắc lại khi báo cáo định kỳ, lưu lượng lớn đều đặn, logic cần nhiều dữ liệu tập trung, hoặc tác vụ nặng. Kết bằng ba điều cần nhớ.</p>
+    <p class="en">The table is the decision guide: use it when data loses value fast, traffic is spiky, work is light and users are spread out; reconsider for periodic reports, large steady load, data-heavy logic or heavy compute. Close with the three takeaways.</p>
+  </aside>
+</section>
+
+<!-- Q&A -->
+<section class="slide" data-ch="e" data-sec="qa" id="qa">
+  <h2><span class="vi">Câu hỏi thường gặp</span><span class="en">Frequently asked questions</span></h2>
+  <div class="s-body qa">
+    <details open class="rise" style="--i:0"><summary><span class="vi">Edge computing khác CDN thế nào?</span><span class="en">How is edge computing different from a CDN?</span></summary>
+      <div><span class="vi">CDN chủ yếu lưu và phát nội dung tĩnh (ảnh, file) gần người dùng. Edge computing chạy được code tại các điểm đó: kiểm tra, biến đổi, định tuyến dữ liệu. Nhiều nhà cung cấp edge vốn đi lên từ CDN, như Cloudflare.</span><span class="en">A CDN mainly caches and serves static content (images, files) near users. Edge computing runs code at those locations: validating, transforming and routing data. Many edge providers grew out of CDNs, such as Cloudflare.</span></div></details>
+    <details open class="rise" style="--i:1"><summary><span class="vi">Serverless có thật sự không có server?</span><span class="en">Is serverless really server-less?</span></summary>
+      <div><span class="vi">Vẫn có server, nhưng lập trình viên không phải quản lý: không cài đặt, vá lỗi, scale thủ công. Tính tiền theo lần chạy thay vì theo giờ thuê máy.</span><span class="en">There are still servers, but developers don't manage them: no installing, patching or manual scaling. You pay per invocation instead of per machine-hour.</span></div></details>
+    <details open class="rise" style="--i:2"><summary><span class="vi">Edge function lỗi giữa chừng thì sự kiện có mất không?</span><span class="en">If an edge function fails midway, is the event lost?</span></summary>
+      <div><span class="vi">Đó là lý do cần tầng hàng đợi: edge ghi sự kiện vào hàng đợi rồi mới trả lời thành công. Phía xử lý lỗi thì hàng đợi giao lại sự kiện; vì vậy xử lý phải idempotent (chạy lại hai lần vẫn ra cùng kết quả).</span><span class="en">That is why you need the queue layer: the edge writes the event to the queue before answering success. If processing fails, the queue redelivers — so handlers must be idempotent (running twice gives the same result).</span></div></details>
+    <details open class="rise" style="--i:3"><summary><span class="vi">Serverless có luôn rẻ hơn?</span><span class="en">Is serverless always cheaper?</span></summary>
+      <div><span class="vi">Không. Prime Video giảm 90% chi phí khi chuyển từ serverless sang một tiến trình chạy liên tục [10]. Serverless rẻ khi lưu lượng thất thường; lưu lượng lớn và đều thì server thường có thể rẻ hơn.</span><span class="en">No. Prime Video cut costs by 90% by moving from serverless to one long-running process [10]. Serverless is cheap for spiky traffic; for large, steady load plain servers can be cheaper.</span></div></details>
+    <details open class="rise" style="--i:4"><summary><span class="vi">Tại sao Vercel rút lui khỏi Edge Functions?</span><span class="en">Why did Vercel step back from Edge Functions?</span></summary>
+      <div><span class="vi">Vì nhiều ứng dụng phụ thuộc vào database tập trung; chạy code ở edge nhưng gọi database ở xa nhiều lần có thể chậm hơn. Vercel chuyển sang functions chạy theo vùng với Node.js [11]; Cloudflare dùng Smart Placement [12].</span><span class="en">Many apps depend on a central database; running at the edge but calling a distant database many times can be slower. Vercel moved to regional Node.js functions [11]; Cloudflare uses Smart Placement [12].</span></div></details>
+    <details open class="rise" style="--i:5"><summary><span class="vi">Kafka khác gì một hàng đợi thông thường?</span><span class="en">How is Kafka different from a regular queue?</span></summary>
+      <div><span class="vi">Kafka lưu sự kiện thành log có thể đọc lại (replay) trong một khoảng thời gian; nhiều nhóm đọc cùng một luồng độc lập. Hàng đợi thông thường thường xoá message sau khi xử lý. Từ Kafka 4.0 còn có chế độ “Queues for Kafka” [18].</span><span class="en">Kafka stores events as a log you can replay for a retention period; many consumer groups read the same stream independently. A regular queue usually deletes messages once processed. Kafka 4.0 also adds “Queues for Kafka” [18].</span></div></details>
+  </div>
+  <aside class="notes">
+    <p class="vi">Các câu hỏi dự kiến từ lớp. Bấm vào từng câu để mở gợi ý trả lời.</p>
+    <p class="en">Questions the class is likely to ask. Click each one to reveal a suggested answer.</p>
+  </aside>
+</section>
+
+<!-- THANKS + FURTHER READING -->
+<section class="slide" data-ch="e" data-sec="read" id="thanks" data-toc-vi="Cảm ơn · Đọc thêm" data-toc-en="Thank you · Further reading">
+  <div class="s-body g-6-4" style="align-items:center">
+    <div>
+      <div class="label c" style="--ch:var(--accent)"><span class="vi">Cảm ơn đã lắng nghe</span><span class="en">Thank you for listening</span></div>
+      <h1 style="font-size:84px"><span class="vi">Hỏi &amp; <em style="color:var(--accent)">đáp</em></span><span class="en">Questions &amp; <em style="color:var(--accent)">answers</em></span></h1>
+      <p class="ink2" style="font-size:20px;max-width:600px;border-left:2px solid var(--accent);padding-left:16px;font-style:italic"><span class="vi">“Dữ liệu có hạn sử dụng — nhưng real-time và edge không phải viên đạn bạc.”</span><span class="en">“Data has an expiry date — but real-time and edge are not a silver bullet.”</span></p>
+    </div>
+    <div class="stack">
+      <span class="label"><span class="vi">Tài liệu nên đọc thêm</span><span class="en">Further reading</span></span>
+      <div class="card rise small" style="--i:0"><span class="label c" style="--ch:var(--c1);margin-bottom:4px"><span class="vi">Sách</span><span class="en">Book</span></span>Martin Kleppmann, <b>Designing Data-Intensive Applications</b> (O'Reilly) — <span class="vi">chương về stream processing là nền tảng tốt nhất cho chủ đề này.</span><span class="en">its stream-processing chapter is the best foundation for this topic.</span></div>
+      <div class="card rise small" style="--i:1"><span class="label c" style="--ch:var(--c2);margin-bottom:4px"><span class="vi">Bài viết kinh điển</span><span class="en">Classic article</span></span>Jay Kreps, <b>“The Log: What every software engineer should know about real-time data's unifying abstraction”</b> (LinkedIn Engineering, 2013).</div>
+      <div class="card rise small" style="--i:2"><span class="label c" style="--ch:var(--c3);margin-bottom:4px"><span class="vi">Blog kỹ thuật</span><span class="en">Engineering blogs</span></span>Cloudflare Blog, Uber Engineering, Grab Engineering, Confluent Blog — <span class="vi">nhiều case study thực tế.</span><span class="en">plenty of real-world case studies.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCES -->
+<section class="slide" data-ch="e" data-sec="ref" id="refs" data-toc-vi="Tài liệu tham khảo (1–12)" data-toc-en="References (1–12)">
+  <h2><span class="vi">Tài liệu tham khảo</span><span class="en">References</span> <span class="muted" style="font-size:.6em">1–12</span></h2>
+  <div class="s-body">
+    <ol class="refs">
+      <li><b>[1]</b>IDC (02/2026). <i>Edge Computing Global Spending to Grow at 15%, reaching $450 Billion by 2029.</i> <a href="https://www.idc.com/resource-center/press-releases/edgecomputingforecast/" target="_blank" rel="noopener">idc.com ↗</a></li>
+      <li><b>[2]</b>Confluent / Business Wire (20/05/2025). <i>2025 Data Streaming Report.</i> <a href="https://www.businesswire.com/news/home/20250520223665/en" target="_blank" rel="noopener">businesswire.com ↗</a></li>
+      <li><b>[3]</b>Datadog (24/08/2023). <i>State of Serverless 2023: serverless ecosystem growing across all major clouds.</i> <a href="https://www.datadoghq.com/about/latest-news/press-releases/datadog-report-finds-the-serverless-ecosystem-growing-across-all-major-clouds/" target="_blank" rel="noopener">datadoghq.com ↗</a></li>
+      <li><b>[4]</b>Cloudflare. <i>Cloudflare Global Network</i> (<span class="vi">truy cập</span><span class="en">accessed</span> 10/2026). <a href="https://www.cloudflare.com/network/" target="_blank" rel="noopener">cloudflare.com ↗</a></li>
+      <li><b>[5]</b>Cloudflare Docs. <i>How Workers works (V8 isolates).</i> <a href="https://developers.cloudflare.com/workers/about/how-it-works/" target="_blank" rel="noopener">developers.cloudflare.com ↗</a></li>
+      <li><b>[6]</b>Cloudflare Docs. <i>Workers — Limits.</i> <a href="https://developers.cloudflare.com/workers/platform/limits" target="_blank" rel="noopener">developers.cloudflare.com ↗</a></li>
+      <li><b>[7]</b>Cloudflare (09/2025). <i>Birthday Week 2025 — Updates and announcements.</i> <a href="https://www.cloudflare.com/innovation-week/birthday-week-2025/updates" target="_blank" rel="noopener">cloudflare.com ↗</a></li>
+      <li><b>[8]</b>DBTA (30/09/2025). <i>Cloudflare unveils the Cloudflare Data Platform.</i> <a href="https://dbta.com/Editorial/News-Flashes/Cloudflare-Celebrates-its-Birthday-by-Unveiling-the-Cloudflare-Data-Platform-171689.aspx" target="_blank" rel="noopener">dbta.com ↗</a></li>
+      <li><b>[9]</b>AWS Compute Blog (2025). <i>AWS Lambda standardizes billing for INIT phase.</i> <a href="https://aws.amazon.com/blogs/compute/aws-lambda-standardizes-billing-for-init-phase/" target="_blank" rel="noopener">aws.amazon.com ↗</a></li>
+      <li><b>[10]</b>The New Stack (04/05/2023). <i>Return of the Monolith: Amazon Dumps Microservices for Video Monitoring.</i> <a href="https://thenewstack.io/return-of-the-monolith-amazon-dumps-microservices-for-video-monitoring/" target="_blank" rel="noopener">thenewstack.io ↗</a></li>
+      <li><b>[11]</b>Vercel Changelog (25/06/2025). <i>Edge Middleware and Edge Functions are now powered by Vercel Functions.</i> <a href="https://vercel.com/changelog/edge-middleware-and-edge-functions-are-now-powered-by-vercel-functions" target="_blank" rel="noopener">vercel.com ↗</a></li>
+      <li><b>[12]</b>Cloudflare Docs. <i>Workers — Placement (Smart Placement).</i> <a href="https://developers.cloudflare.com/workers/configuration/placement/" target="_blank" rel="noopener">developers.cloudflare.com ↗</a></li>
+    </ol>
+  </div>
+</section>
+
+<section class="slide" data-ch="e" data-sec="ref" id="refs-2" data-toc-vi="Tài liệu tham khảo (13–23)" data-toc-en="References (13–23)">
+  <h2><span class="vi">Tài liệu tham khảo</span><span class="en">References</span> <span class="muted" style="font-size:.6em">13–23</span></h2>
+  <div class="s-body">
+    <ol class="refs">
+      <li><b>[13]</b>ByteByteGo. <i>How Uber Manages Petabytes of Real-Time Data.</i> <a href="https://blog.bytebytego.com/p/how-uber-manages-petabytes-of-real" target="_blank" rel="noopener">blog.bytebytego.com ↗</a></li>
+      <li><b>[14]</b>Grab Engineering (30/11/2023). <i>An elegant platform</i> (<span class="vi">Coban — nền tảng data streaming của Grab</span><span class="en">Coban — Grab's data-streaming platform</span>). <a href="https://engineering.grab.com/an-elegant-platform" target="_blank" rel="noopener">engineering.grab.com ↗</a></li>
+      <li><b>[15]</b>Kai Waehner (26/10/2024). <i>Fraud Prevention in Under 60 Seconds with Apache Kafka: How A Bank in Thailand is Leading the Charge.</i> <a href="https://www.kai-waehner.de/blog/2024/10/26/fraud-prevention-in-under-60-seconds-with-apache-kafka-how-a-bank-in-thailand-is-leading-the-charge/" target="_blank" rel="noopener">kai-waehner.de ↗</a></li>
+      <li><b>[16]</b>Tạp chí Kinh tế Tài chính. <i>Phát triển hạ tầng thanh toán quốc gia cả chiều rộng và chiều sâu.</i> <a href="https://tapchikinhtetaichinh.vn/phat-trien-ha-tang-thanh-toan-quoc-gia-ca-chieu-rong-va-chieu-sau-154850.html" target="_blank" rel="noopener">tapchikinhtetaichinh.vn ↗</a></li>
+      <li><b>[17]</b>InfoQ (03/09/2014). <i>Questioning the Lambda Architecture</i> (<span class="vi">tóm tắt bài của Jay Kreps</span><span class="en">summary of Jay Kreps' article</span>). <a href="https://www.infoq.com/news/2014/09/lambda-architecture-questions" target="_blank" rel="noopener">infoq.com ↗</a></li>
+      <li><b>[18]</b>SoftwareMill (2025). <i>Apache Kafka 4.0.0 released: KRaft, Queues, better rebalance performance.</i> <a href="https://softwaremill.com/apache-kafka-4-0-0-released-kraft-queues-better-rebalance-performance/" target="_blank" rel="noopener">softwaremill.com ↗</a></li>
+      <li><b>[19]</b>Mei et al. (VLDB 2025). <i>Disaggregated State Management in Apache Flink 2.0.</i> <a href="https://www.vldb.org/pvldb/vol18/p4846-mei.pdf" target="_blank" rel="noopener">vldb.org ↗</a></li>
+      <li><b>[20]</b>Cloudflare. <i>Durable Objects</i> (product page). <a href="https://www.cloudflare.com/products/durable-objects/" target="_blank" rel="noopener">cloudflare.com ↗</a></li>
+      <li><b>[21]</b>Cloudflare / Business Wire (26/09/2024). <i>Cloudflare enhances AI inference platform with GPU upgrade.</i> <a href="https://www.businesswire.com/news/home/20240926193441/en" target="_blank" rel="noopener">businesswire.com ↗</a></li>
+      <li><b>[22]</b>TFIR (29/01/2024). <i>CNCF Announces Graduation of CloudEvents.</i> <a href="https://tfir.io/cncf-announces-graduation-of-cloudevents/" target="_blank" rel="noopener">tfir.io ↗</a></li>
+      <li><b>[23]</b>RisingWave. <i>Incremental Materialized Views Explained.</i> <a href="https://risingwave.com/blog/incremental-materialized-views-explained/" target="_blank" rel="noopener">risingwave.com ↗</a></li>
+    </ol>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- chrome -->
+<button class="nav-zone l no-print" data-go="prev" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+<button class="nav-zone r no-print" data-go="next" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+<div class="progress" id="progress"><i></i></div>
+<div class="notes-panel" id="notes-panel" aria-live="polite"></div>
+
+<div class="toolbar" id="toolbar">
+  <button class="tb tb-nav" data-go="prev" title="Previous (←)" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button class="tb tb-nav" data-go="next" title="Next (→)" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <span class="tb-sep tb-nav"></span>
+  <div class="lang" role="group" aria-label="Language"><button data-act="lang" data-lang="vi" aria-pressed="true">VI</button><button data-act="lang" data-lang="en" aria-pressed="false">EN</button></div>
+  <button class="tb" data-act="theme" title="Light / dark (T)" aria-label="Toggle light or dark theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z" style="fill:currentColor"/></svg></button>
+  <button class="tb" data-act="toc" title="Contents (M)" aria-label="Contents"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+  <button class="tb tb-notes" data-act="notes" title="Speaker notes (N)" aria-label="Toggle speaker notes" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M5 5h14v10H10l-4 4v-4H5z"/><path d="M9 9h6M9 12h4"/></svg></button>
+  <button class="tb tb-mode" data-act="mode" title="Scroll view / slide view" aria-label="Switch between scroll view and slide view" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="7" rx="1.5"/><rect x="4" y="14" width="16" height="7" rx="1.5"/></svg></button>
+  <button class="tb" data-act="print" title="Export PDF" aria-label="Export as PDF"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
+  <button class="tb tb-nav" data-act="full" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</div>
+
+<aside class="toc" id="toc" aria-label="Contents">
+  <header><b><span class="vi">Mục lục</span><span class="en">Contents</span></b><button class="tb" data-act="toc" aria-label="Close contents"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <nav></nav>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<script src="assets/js/figures.js"></script>
+<script src="assets/js/deck.js"></script>
+</body>
+</html>
