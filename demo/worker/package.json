@@ -1,0 +1,15 @@
+{
+  "name": "edge-clickstream-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail --format pretty",
+    "db:init:local": "wrangler d1 execute clickstream --local --file=schema.sql",
+    "db:init:remote": "wrangler d1 execute clickstream --remote --file=schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

@@ -1,0 +1,26 @@
+name = "edge-clickstream"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+# Tầng lưu trữ: Cloudflare D1 (SQLite serverless)
+[[d1_databases]]
+binding = "DB"
+database_name = "clickstream"
+database_id = "REPLACE_WITH_D1_ID"   # lấy từ lệnh: npx wrangler d1 create clickstream
+
+# Tầng hàng đợi: Cloudflare Queues (đệm giữa edge và database)
+[[queues.producers]]
+binding = "EVENTS_QUEUE"
+queue = "click-events"
+
+[[queues.consumers]]
+queue = "click-events"
+max_batch_size = 20
+max_batch_timeout = 1      # giây – giữ độ trễ thấp cho demo
+
+# Tầng "batch" để so sánh: cron chạy mỗi 2 phút
+[triggers]
+crons = ["*/2 * * * *"]
+
+[vars]
+RESET_KEY = "demo123"      # khóa để xoá dữ liệu trước buổi demo

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Demo Stage</title>
+<style>
+  :root { --bg:#0b0e14; --panel:#141823; --border:#262b37; --text:#e8eaf0; --muted:#8a91a3;
+          --rt:#3ba0ff; --batch:#f5a524; --ok:#2fbf71; --bad:#ef5350; --accent:#ee4d2d; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); overflow:hidden;
+               font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  #top { height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 24px;
+         border-bottom:1px solid var(--border); font-size:17px; }
+  #step b { color:var(--rt); margin-right:8px; }
+  #env { color:var(--muted); font-size:14px; display:flex; align-items:center; gap:8px; }
+  #env i { width:9px; height:9px; border-radius:50%; background:var(--bad); animation:pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity:.25; } }
+  #stage { position:absolute; top:49px; left:0; right:0; bottom:96px; }
+  #cap { position:absolute; left:0; right:0; bottom:0; height:96px; display:flex; align-items:center; justify-content:center;
+         padding:0 90px; text-align:center; font-size:25px; line-height:1.35; background:#000; border-top:1px solid var(--border); }
+
+  .view { position:absolute; inset:0; display:none; }
+  body[data-mode="title"] #v-title, body[data-mode="outro"] #v-outro { display:flex; }
+  body[data-mode="phone"] #v-phone { display:flex; }
+
+  /* Dashboard luôn được nạp sẵn, chỉ đổi kích thước theo cảnh */
+  #dash { position:absolute; top:0; right:0; height:100%; width:100%; border:0; visibility:hidden; background:#0f1218; }
+  body[data-mode="split"] #dash { visibility:visible; width:62%; border-left:1px solid var(--border); }
+  body[data-mode="dash"] #dash { visibility:visible; }
+
+  #terms { position:absolute; left:0; top:0; bottom:0; width:38%; padding:12px; display:none; flex-direction:column; gap:12px; }
+  body[data-mode="split"] #terms { display:flex; }
+  .term { flex:1; min-height:0; background:#05070a; border:1px solid var(--border); border-radius:10px; display:flex; flex-direction:column; }
+  .term h3 { margin:0; padding:8px 12px; font:600 13px ui-monospace,Menlo,monospace; color:var(--muted); border-bottom:1px solid var(--border); }
+  .term .body { flex:1; min-height:0; overflow:hidden; padding:8px 12px; display:flex; flex-direction:column; justify-content:flex-end;
+                font:12.5px/1.5 ui-monospace,Menlo,monospace; }
+  .term .body div { white-space:pre-wrap; word-break:break-all; }
+  .k { color:var(--batch); font-weight:700; }
+  .bot { color:var(--bad); }
+  .job { color:var(--batch); font-weight:700; }
+  .dim { color:var(--muted); }
+
+  /* Cảnh mở đầu */
+  #v-title, #v-outro { flex-direction:column; align-items:center; justify-content:center; gap:28px; padding:0 60px; }
+  h1 { margin:0; font-size:44px; text-align:center; }
+  .subtitle { color:var(--muted); font-size:20px; margin-top:-14px; }
+  .flow { display:flex; align-items:stretch; gap:10px; }
+  .node { width:200px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px 14px; text-align:center; }
+  .node .ic { font-size:34px; }
+  .node .t { font-weight:700; font-size:17px; margin:6px 0 4px; }
+  .node .d { color:var(--muted); font-size:14px; line-height:1.4; }
+  .node.edge { border-color:var(--rt); box-shadow:0 0 0 1px var(--rt) inset; }
+  .arrow { align-self:center; color:var(--muted); font-size:26px; }
+  .team { color:var(--muted); font-size:19px; }
+  .team b { color:var(--text); font-weight:600; }
+  .batchbox { border:2px dashed var(--batch); color:var(--batch); border-radius:12px; padding:12px 20px; font-size:16px; }
+
+  /* Cảnh điện thoại */
+  #v-phone { align-items:center; justify-content:center; gap:70px; }
+  .phone { width:410px; height:730px; border:12px solid #20242e; border-radius:44px; overflow:hidden; background:#fff; flex:none; }
+  .phone iframe { width:100%; height:100%; border:0; }
+  .codecol { width:640px; display:flex; flex-direction:column; gap:22px; }
+  .code { background:var(--panel); border:1px solid var(--border); border-radius:12px; }
+  .code h3 { margin:0; padding:10px 16px; font-size:15px; color:var(--muted); border-bottom:1px solid var(--border); }
+  .code pre { margin:0; padding:14px 16px; font:15px/1.55 ui-monospace,Menlo,monospace; min-height:120px; white-space:pre-wrap; }
+  .flash { animation:flash 1.2s; }
+  @keyframes flash { from { background:rgba(59,160,255,.22); } to { background:transparent; } }
+
+  /* Tổng kết */
+  .stats { display:flex; gap:20px; }
+  .stat { width:250px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; }
+  .stat .v { font-size:40px; font-weight:800; }
+  .stat .l { color:var(--muted); font-size:15px; margin-top:4px; }
+  .takeaways { font-size:21px; line-height:1.7; color:var(--text); }
+</style>
+</head>
+<body data-mode="title">
+<div id="top"><div id="step"></div><div id="env"><i></i><span>DEMO · chạy local với wrangler dev</span></div></div>
+<div id="stage">
+  <div class="view" id="v-title">
+    <h1>Demo: Event-driven Clickstream Pipeline</h1>
+    <div class="subtitle">Flash Sale 11/11 · Cloudflare Workers + Queues + D1</div>
+    <div class="flow">
+      <div class="node"><div class="ic">🛒</div><div class="t">Người dùng</div><div class="d">Click "Mua ngay"<br>gửi JSON</div></div>
+      <div class="arrow">→</div>
+      <div class="node edge"><div class="ic">⚡</div><div class="t">Worker tại edge</div><div class="d">Validate, gắn country,<br>colo, lọc bot</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">📬</div><div class="t">Queue</div><div class="d">Đệm và gom lô,<br>không mất sự kiện</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">⚙️</div><div class="t">Consumer</div><div class="d">Cộng dồn số liệu<br>ngay khi tới</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">🗄️</div><div class="t">D1</div><div class="d">Lưu sự kiện thô<br>và bảng tổng hợp</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">📊</div><div class="t">Dashboard</div><div class="d">Cập nhật<br>mỗi giây</div></div>
+    </div>
+    <div class="batchbox">⏰ So sánh: job batch (cron) quét lại toàn bộ dữ liệu theo lịch</div>
+    <div class="team">Nhóm thực hiện: <b>Bùi Minh Hiếu</b> · <b>Ngô Lê Khoa</b> · <b>Lý Minh Trung</b></div>
+  </div>
+
+  <div class="view" id="v-phone">
+    <div class="phone"><iframe id="shop"></iframe></div>
+    <div class="codecol">
+      <div class="code"><h3>Trình duyệt gửi → POST /event</h3><pre id="req">Chờ người dùng bấm…</pre></div>
+      <div class="code"><h3>Edge trả về (đã gắn thêm thông tin)</h3><pre id="res">–</pre></div>
+    </div>
+  </div>
+
+  <div id="terms">
+    <div class="term"><h3>$ node simulator.js</h3><div class="body" id="t-sim"></div></div>
+    <div class="term"><h3>Worker log (console.log tại edge)</h3><div class="body" id="t-worker"></div></div>
+  </div>
+  <iframe id="dash"></iframe>
+
+  <div class="view" id="v-outro">
+    <h1>Tổng kết demo</h1>
+    <div class="stats">
+      <div class="stat"><div class="v" id="o-total">0</div><div class="l">sự kiện đã xử lý</div></div>
+      <div class="stat"><div class="v" id="o-lat">–</div><div class="l">ms từ edge tới database</div></div>
+      <div class="stat"><div class="v" id="o-bots">0</div><div class="l">sự kiện bot bị lọc</div></div>
+      <div class="stat"><div class="v">≤ 1s</div><div class="l">để dashboard thấy dữ liệu</div></div>
+    </div>
+    <div class="takeaways">
+      ✔ Bắt sự kiện tại edge, gần người dùng<br>
+      ✔ Hàng đợi giúp không mất dữ liệu khi database chậm<br>
+      ✔ Real-time cho phản hồi tức thì, batch vẫn hợp với báo cáo định kỳ
+    </div>
+  </div>
+</div>
+<div id="cap"></div>
+
+<script>
+  var MAX_LINES = 60;
+  function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+  function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+  window.stage = {
+    init: function (base, dashQuery) {
+      document.getElementById("dash").src = base + "/dashboard" + dashQuery;
+      document.getElementById("shop").src = base + "/";
+    },
+    mode: function (m) { document.body.dataset.mode = m; },
+    step: function (html) { document.getElementById("step").innerHTML = html; },
+    cap: function (t) { document.getElementById("cap").textContent = t; },
+    line: function (pane, text) {
+      var box = document.getElementById("t-" + pane), div = document.createElement("div");
+      var h = esc(text);
+      if (pane === "worker") {
+        h = h.replace(/"(country|colo|receivedAt|isBot)":/g, '"<span class="k">$1</span>":');
+        if (text.indexOf('"isBot":true') >= 0) div.className = "bot";
+        if (text.indexOf("batchJob") >= 0) div.className = "job";
+      } else if (text.indexOf("BOT") >= 0) div.className = "bot";
+      div.innerHTML = h;
+      box.appendChild(div);
+      while (box.children.length > MAX_LINES) box.removeChild(box.firstChild);
+    },
+    req: function (o) { var el = document.getElementById("req"); el.textContent = JSON.stringify(o, null, 2); flash(el); },
+    res: function (o) { var el = document.getElementById("res"); el.textContent = JSON.stringify(o, null, 2); flash(el); },
+    outro: function (s) {
+      document.getElementById("o-total").textContent = s.total.toLocaleString("vi-VN");
+      document.getElementById("o-lat").textContent = s.pipelineMs == null ? "–" : s.pipelineMs;
+      document.getElementById("o-bots").textContent = s.bots;
+    }
+  };
+</script>
+</body>
+</html>

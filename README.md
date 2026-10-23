@@ -56,6 +56,10 @@ Sau đó vào **Settings → Pages → Build and deployment**, chọn *Deploy fr
 
 > File `Dan_bai_seminar_*.docx` là dàn bài gốc; nếu không muốn công khai, thêm nó vào `.gitignore` trước khi push.
 
+## Demo
+
+Code demo nằm trong [`demo/`](demo/): Cloudflare Worker + Queues + D1 (thu click tại edge, dashboard real-time so với batch), script giả lập click, và công cụ tự quay video demo kèm lời thoại. Hướng dẫn chạy và deploy: [`demo/README.md`](demo/README.md).
+
 ## Nguồn
 
 Số liệu và case study lấy từ 23 tài liệu tham khảo ở hai slide cuối. Số liệu của các hãng (Cloudflare, Confluent, Datadog…) là số do chính hãng công bố.
