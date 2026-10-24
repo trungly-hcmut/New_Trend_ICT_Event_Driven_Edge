@@ -23,6 +23,7 @@
       var m = localStorage.getItem('edge:mode');
       if (m === 'doc' || (!m && matchMedia('screen and (max-width: 860px)').matches)) d.classList.add('doc-mode');
       if (p.has('static')) d.classList.add('static');
+      if (p.has('export')) d.classList.add('static', 'export');
     } catch (e) {}
   })();
 </script>
@@ -37,6 +38,7 @@
     <marker id="ah-c2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--c2)"/></marker>
     <marker id="ah-c3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--c3)"/></marker>
     <marker id="ah-bad" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--bad)"/></marker>
+    <marker id="ah-batch" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--batch)"/></marker>
     <marker id="ah-good" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--good)"/></marker>
   </defs>
 </svg>
@@ -65,6 +67,7 @@
     <div class="cta">
       <button class="btn primary" data-go="next"><span class="vi">Bắt đầu trình bày</span><span class="en">Start presentation</span> →</button>
       <button class="btn" data-act="toc"><span class="vi">Mục lục</span><span class="en">Contents</span></button>
+      <a class="btn" data-pptx href="assets/pptx/Batch-to-Realtime_VI.pptx" download><span class="vi">Tải PowerPoint</span><span class="en">Download PowerPoint</span></a>
       <div class="lang" role="group" aria-label="Language"><button data-act="lang" data-lang="vi" aria-pressed="true">VI</button><button data-act="lang" data-lang="en" aria-pressed="false">EN</button></div>
     </div>
     <p class="hint">
@@ -119,10 +122,16 @@
         <p><span class="vi">Dòng thời gian từ batch đến real-time và 7 xu hướng 2025–2026.</span><span class="en">A timeline from batch to real-time and 7 trends for 2025–2026.</span></p>
         <span class="rng">slide 22–23</span>
       </button>
+      <button class="ag rise" style="--i:5;--c:var(--c6)" data-go="#ch6">
+        <span class="no">DEMO</span>
+        <h3><span class="vi">Thu click tại edge</span><span class="en">Clicks at the edge</span></h3>
+        <p><span class="vi">Cả lớp cùng bấm: Worker → Queue → D1 → dashboard, real-time so với batch.</span><span class="en">The class taps along: Worker → Queue → D1 → dashboard, real-time vs batch.</span></p>
+        <span class="rng">slide 24–28</span>
+      </button>
     </div>
     <div class="crumbs rise" style="--i:6">
-      <span class="vi chips" style="gap:6px 8px;align-items:center"><span class="chip">Vấn đề</span>→<span class="chip">Khái niệm</span>→<span class="chip">Vì sao là xu hướng</span>→<span class="chip">Edge hoạt động thế nào</span>→<span class="chip">Kiến trúc</span>→<span class="chip">Case study</span>→<span class="chip">Mặt trái</span>→<span class="chip">Xu hướng 2025–2026</span>→<span class="chip">Kết luận</span></span>
-      <span class="en chips" style="gap:6px 8px;align-items:center"><span class="chip">Problem</span>→<span class="chip">Concepts</span>→<span class="chip">Why it is a trend</span>→<span class="chip">How the edge works</span>→<span class="chip">Architecture</span>→<span class="chip">Case studies</span>→<span class="chip">Downsides</span>→<span class="chip">Trends 2025–2026</span>→<span class="chip">Conclusion</span></span>
+      <span class="vi chips" style="gap:6px 8px;align-items:center"><span class="chip">Vấn đề</span>→<span class="chip">Khái niệm</span>→<span class="chip">Vì sao là xu hướng</span>→<span class="chip">Edge hoạt động thế nào</span>→<span class="chip">Kiến trúc</span>→<span class="chip">Case study</span>→<span class="chip">Mặt trái</span>→<span class="chip">Xu hướng 2025–2026</span>→<span class="chip">Demo</span>→<span class="chip">Kết luận</span></span>
+      <span class="en chips" style="gap:6px 8px;align-items:center"><span class="chip">Problem</span>→<span class="chip">Concepts</span>→<span class="chip">Why it is a trend</span>→<span class="chip">How the edge works</span>→<span class="chip">Architecture</span>→<span class="chip">Case studies</span>→<span class="chip">Downsides</span>→<span class="chip">Trends 2025–2026</span>→<span class="chip">Demo</span>→<span class="chip">Conclusion</span></span>
     </div>
     <div class="callout rise mt" style="--i:7;--ch:var(--accent)">
       <span class="vi"><b>Thông điệp xuyên suốt:</b> dữ liệu có hạn sử dụng — giá trị của một sự kiện giảm dần theo từng giây, nên xu hướng là xử lý nó ngay tại nơi và lúc nó phát sinh. Nhưng real-time và edge không phải viên đạn bạc.</span>
@@ -130,8 +139,8 @@
     </div>
   </div>
   <aside class="notes">
-    <p class="vi">Bài đi theo năm câu hỏi: vì sao phải nhanh, làm thế nào, ai đang làm, khi nào không nên, và đi về đâu. Dòng chip phía dưới là trình tự chi tiết: vấn đề → khái niệm → vì sao là xu hướng → edge hoạt động thế nào → kiến trúc → case study → mặt trái → xu hướng → kết luận.</p>
-    <p class="en">The talk follows five questions: why so fast, how, who, when not to, and where next. The chips show the detailed order: problem → concepts → why it is a trend → how the edge works → architecture → case studies → downsides → trends → conclusion.</p>
+    <p class="vi">Bài đi theo năm câu hỏi: vì sao phải nhanh, làm thế nào, ai đang làm, khi nào không nên, và đi về đâu. Dòng chip phía dưới là trình tự chi tiết: vấn đề → khái niệm → vì sao là xu hướng → edge hoạt động thế nào → kiến trúc → case study → mặt trái → xu hướng → demo → kết luận.</p>
+    <p class="en">The talk follows five questions: why so fast, how, who, when not to, and where next. The chips show the detailed order: problem → concepts → why it is a trend → how the edge works → architecture → case studies → downsides → trends → demo → conclusion.</p>
   </aside>
 </section>
 
@@ -953,6 +962,205 @@
 </section>
 
 <!-- =====================================================
+     CHAPTER 6 — DEMO
+     ===================================================== -->
+<section class="slide divider" data-ch="6" id="ch6" data-toc-vi="06 — Demo" data-toc-en="06 — Demo">
+  <div class="stream"><i style="--d:0"></i><i style="--d:1.1"></i><i style="--d:2.2"></i></div>
+  <div class="big">06</div>
+  <div class="d-kicker">Demo</div>
+  <h2><span class="vi">Thu click tại edge: real-time vs batch</span><span class="en">Capturing clicks at the edge: real-time vs batch</span></h2>
+  <p class="lede"><span class="vi">Một trang “Flash Sale 11/11”: mỗi cú bấm là một sự kiện đi qua đủ 5 tầng của pipeline trên Cloudflare.</span><span class="en">A “Flash Sale 11/11” shop: every tap is an event that travels through all five pipeline layers on Cloudflare.</span></p>
+  <ol>
+    <li><b>6.1</b><span class="vi">Kiến trúc demo</span><span class="en">Demo architecture</span></li>
+    <li><b>6.2</b><span class="vi">Demo trực tiếp — cả lớp cùng bấm</span><span class="en">Live demo — the whole class taps</span></li>
+    <li><b>6.3</b><span class="vi">Demo cho thấy gì — và chưa làm được gì</span><span class="en">What the demo shows — and what it doesn't</span></li>
+    <li><b>6.4</b><span class="vi">Video dự phòng</span><span class="en">Backup video</span></li>
+  </ol>
+</section>
+
+<!-- 6.1 DEMO ARCHITECTURE -->
+<section class="slide" data-ch="6" data-sec="6.1" id="demo-arch">
+  <h2><span class="vi">Kiến trúc demo: <em>đúng 5 tầng</em> của slide 12</span><span class="en">Demo architecture: <em>the same 5 layers</em> as slide 12</span></h2>
+  <div class="s-body">
+    <div class="card rise fig fig-scroll" style="--i:0;padding:14px 16px 8px">
+      <svg viewBox="0 0 1152 262" role="img" aria-label="Users and a simulator post events to a Worker at the edge, which queues them; a consumer aggregates into D1 and a dashboard polls every second; a cron job recomputes a batch snapshot every two minutes">
+        <g class="mono tc" font-size="11.5" font-weight="700" text-anchor="middle" letter-spacing=".8">
+          <text x="278" y="14"><tspan class="vi">01 · THU NHẬN</tspan><tspan class="en">01 · INGEST</tspan></text>
+          <text x="476" y="14"><tspan class="vi">02 · HÀNG ĐỢI</tspan><tspan class="en">02 · QUEUE</tspan></text>
+          <text x="674" y="14"><tspan class="vi">03 · XỬ LÝ</tspan><tspan class="en">03 · PROCESS</tspan></text>
+          <text x="872" y="14"><tspan class="vi">04 · LƯU TRỮ</tspan><tspan class="en">04 · STORE</tspan></text>
+          <text x="1070" y="14"><tspan class="vi">05 · HIỂN THỊ</tspan><tspan class="en">05 · SERVE</tspan></text>
+        </g>
+        <rect x="0" y="26" width="160" height="92" rx="12" class="box"/>
+        <text x="80" y="56" text-anchor="middle" font-size="16" font-weight="700" class="vi">Người dùng</text><text x="80" y="56" text-anchor="middle" font-size="16" font-weight="700" class="en">Users</text>
+        <text x="80" y="78" text-anchor="middle" font-size="12" class="mono t2">simulator.js</text>
+        <text x="80" y="98" text-anchor="middle" font-size="12" class="tm vi">+ điện thoại quét QR</text><text x="80" y="98" text-anchor="middle" font-size="12" class="tm en">+ phones via QR</text>
+        <rect x="198" y="26" width="160" height="92" rx="12" class="box-ch"/>
+        <text x="278" y="56" text-anchor="middle" font-size="16" font-weight="700">Worker</text>
+        <text x="278" y="78" text-anchor="middle" font-size="12" class="mono t2">POST /event</text>
+        <text x="278" y="98" text-anchor="middle" font-size="12" class="tm vi">kiểm tra · colo · lọc bot</text><text x="278" y="98" text-anchor="middle" font-size="12" class="tm en">validate · colo · bot filter</text>
+        <rect x="396" y="26" width="160" height="92" rx="12" class="box-ch"/>
+        <text x="476" y="56" text-anchor="middle" font-size="16" font-weight="700">Queue</text>
+        <text x="476" y="78" text-anchor="middle" font-size="12" class="mono t2">click-events</text>
+        <text x="476" y="98" text-anchor="middle" font-size="12" class="tm vi">lô ≤ 20 · ≤ 1 giây</text><text x="476" y="98" text-anchor="middle" font-size="12" class="tm en">batch ≤ 20 · ≤ 1 s</text>
+        <rect x="594" y="26" width="160" height="92" rx="12" class="box-ch"/>
+        <text x="674" y="56" text-anchor="middle" font-size="16" font-weight="700">Consumer</text>
+        <text x="674" y="78" text-anchor="middle" font-size="12" class="mono t2">queue()</text>
+        <text x="674" y="98" text-anchor="middle" font-size="12" class="tm vi">cộng dồn tổng hợp</text><text x="674" y="98" text-anchor="middle" font-size="12" class="tm en">incremental totals</text>
+        <rect x="792" y="26" width="160" height="92" rx="12" class="box-ch"/>
+        <text x="872" y="56" text-anchor="middle" font-size="16" font-weight="700">D1</text>
+        <text x="872" y="78" text-anchor="middle" font-size="12" class="mono t2">SQLite serverless</text>
+        <text x="872" y="98" text-anchor="middle" font-size="12" class="tm vi">events + bảng tổng hợp</text><text x="872" y="98" text-anchor="middle" font-size="12" class="tm en">events + aggregates</text>
+        <rect x="990" y="26" width="160" height="92" rx="12" class="box-ch"/>
+        <text x="1070" y="56" text-anchor="middle" font-size="16" font-weight="700" class="mono">/dashboard</text>
+        <text x="1070" y="78" text-anchor="middle" font-size="12" class="mono t2">poll /stats · 1 s</text>
+        <text x="1070" y="98" text-anchor="middle" font-size="12" class="tm vi">xanh = real-time</text><text x="1070" y="98" text-anchor="middle" font-size="12" class="tm en">blue = real-time</text>
+        <g>
+          <line x1="160" y1="66" x2="195" y2="66" class="ln-ch flow"/>
+          <line x1="358" y1="66" x2="393" y2="66" class="ln-ch flow"/>
+          <line x1="556" y1="66" x2="591" y2="66" class="ln-ch flow"/>
+          <line x1="754" y1="66" x2="789" y2="66" class="ln-ch flow"/>
+          <line x1="952" y1="66" x2="987" y2="66" class="ln-ch flow"/>
+        </g>
+        <circle r="5" class="pkt glow"><animateMotion dur="4s" repeatCount="indefinite" path="M160 66 H990"/></circle>
+        <circle r="5" class="pkt glow"><animateMotion dur="4s" begin="-2s" repeatCount="indefinite" path="M160 66 H990"/></circle>
+        <!-- live log -->
+        <path d="M278 118 V176" class="ln dash" marker-end="url(#ah)"/>
+        <rect x="198" y="180" width="160" height="50" rx="10" class="box"/>
+        <text x="278" y="202" text-anchor="middle" font-size="13" class="mono">wrangler tail</text>
+        <text x="278" y="220" text-anchor="middle" font-size="11.5" class="tm vi">log JSON từng sự kiện</text><text x="278" y="220" text-anchor="middle" font-size="11.5" class="tm en">JSON log per event</text>
+        <!-- batch lane -->
+        <rect x="594" y="180" width="160" height="50" rx="10" class="box" style="stroke:var(--batch)"/>
+        <text x="674" y="202" text-anchor="middle" font-size="13" class="mono" style="fill:var(--batch)">cron */2 min</text>
+        <text x="674" y="220" text-anchor="middle" font-size="11.5" class="tm">batch job</text>
+        <path d="M754 205 C 830 205 872 190 872 122" class="ln" style="stroke:var(--batch)" marker-end="url(#ah-batch)"/>
+        <text x="884" y="176" font-size="11.5" style="fill:var(--batch)" class="vi">quét lại toàn bộ events</text><text x="884" y="176" font-size="11.5" style="fill:var(--batch)" class="en">rescans every event</text>
+        <path d="M952 104 H987" class="ln" style="stroke:var(--batch)" marker-end="url(#ah-batch)"/>
+        <text x="1070" y="140" text-anchor="middle" font-size="11.5" style="fill:var(--batch)" class="vi">cam = batch</text><text x="1070" y="140" text-anchor="middle" font-size="11.5" style="fill:var(--batch)" class="en">amber = batch</text>
+        <text x="0" y="254" font-size="12" class="tm vi">Không có Queue? Worker tự ghi thẳng vào D1 — không cần sửa code.</text><text x="0" y="254" font-size="12" class="tm en">No Queue available? The Worker writes straight to D1 — no code change needed.</text>
+      </svg>
+    </div>
+    <div class="g2 mt">
+      <div class="card rise" style="--i:1">
+        <span class="label c"><span class="vi">Real-time · consumer cộng dồn từng lô</span><span class="en">Real-time · the consumer adds each batch</span></span>
+<pre class="code"><span class="k">INSERT INTO</span> page_counts (page, count) <span class="k">VALUES</span> (?, ?)
+<span class="k">ON CONFLICT</span>(page) <span class="k">DO UPDATE</span>
+  <span class="k">SET</span> count = count + excluded.count;</pre>
+        <p class="tiny muted" style="margin:8px 0 0"><span class="vi">Chi phí tỷ lệ với số sự kiện mới — như hàng “Cách tính lại” ở slide 8.</span><span class="en">Cost scales with the new events — the “Recompute” row on slide 8.</span></p>
+      </div>
+      <div class="card rise" style="--i:2;--ch:var(--batch)">
+        <span class="label c"><span class="vi">Batch · cron quét lại toàn bộ</span><span class="en">Batch · cron rescans everything</span></span>
+<pre class="code"><span class="k">DELETE FROM</span> batch_snapshot;
+<span class="k">INSERT INTO</span> batch_snapshot (page, count)
+<span class="k">SELECT</span> page, <span class="k">COUNT</span>(*) <span class="k">FROM</span> events
+<span class="k">WHERE</span> is_bot = <span class="n">0</span> <span class="k">GROUP BY</span> page;</pre>
+        <p class="tiny muted" style="margin:8px 0 0"><span class="vi">Chi phí tăng theo toàn bộ bảng events, và kết quả đứng yên giữa hai lần chạy.</span><span class="en">Cost grows with the whole events table, and results freeze between runs.</span></p>
+      </div>
+    </div>
+  </div>
+  <p class="src">demo/worker/src/index.js · demo/worker/wrangler.toml</p>
+  <aside class="notes">
+    <p class="vi">Demo mô phỏng một website bán hàng ngày flash sale. Mỗi lần bấm sản phẩm, một sự kiện được gửi tới Cloudflare Worker tại edge, đi qua hàng đợi, được consumer cộng dồn vào D1 rồi hiện ngay trên dashboard. Song song, một job batch chạy theo cron để so sánh. Hai đoạn SQL bên dưới chính là khác biệt: real-time chỉ cộng phần mới, batch quét lại toàn bộ.</p>
+    <p class="en">The demo simulates a flash-sale shop. Every product tap sends an event to a Cloudflare Worker at the edge; it goes through a queue, a consumer adds it into D1, and the dashboard shows it immediately. A cron batch job runs alongside for comparison. The two SQL snippets are the difference: real-time adds only what is new, batch rescans everything.</p>
+  </aside>
+</section>
+
+<!-- 6.2 LIVE DEMO -->
+<!-- URL demo: điền vào data-demo-url, hoặc mở slide với ?demo=https://edge-clickstream.<subdomain>.workers.dev -->
+<section class="slide" data-ch="6" data-sec="6.2" id="demo-live" data-demo-url="">
+  <h2><span class="vi">Demo trực tiếp — <em>cả lớp cùng bấm</em></span><span class="en">Live demo — <em>the whole class taps</em></span></h2>
+  <div class="s-body g-4-8">
+    <div class="card hl rise demo-join" style="--i:0">
+      <div class="if-url">
+        <span class="label c"><span class="vi">Quét để vào Flash Sale 11/11</span><span class="en">Scan to join Flash Sale 11/11</span></span>
+        <div class="qr-box" aria-label="QR code"></div>
+        <p class="mono tiny ink2" style="text-align:center;margin:10px 0 14px;word-break:break-all" data-demo-text="/"></p>
+        <div class="cta" style="justify-content:center">
+          <a class="btn primary" data-demo-href="/dashboard" target="_blank" rel="noopener"><span class="vi">Mở dashboard</span><span class="en">Open dashboard</span> ↗</a>
+          <a class="btn" data-demo-href="/" target="_blank" rel="noopener"><span class="vi">Trang shop</span><span class="en">Shop page</span> ↗</a>
+        </div>
+      </div>
+      <div class="if-no-url">
+        <span class="label c"><span class="vi">Demo chạy trong buổi thuyết trình</span><span class="en">The demo runs during the talk</span></span>
+        <p class="small if-export"><span class="vi">Dashboard được mở trực tiếp trên trình duyệt trong buổi thuyết trình. Xem lại phần demo qua video ở cuối phần này, hoặc đọc mã nguồn:</span><span class="en">The dashboard is opened live in a browser during the talk. To replay the demo, watch the video at the end of this section, or read the source:</span></p>
+        <p class="small if-web"><span class="vi">Mã QR và nút mở dashboard sẽ hiện khi slide được mở kèm địa chỉ Worker:</span><span class="en">The QR code and dashboard buttons appear when the slides are opened with the Worker address:</span></p>
+        <p class="mono tiny if-web" style="word-break:break-all;color:var(--ch)">?demo=https://edge-clickstream.&lt;subdomain&gt;.workers.dev</p>
+        <p class="small if-web"><span class="vi">Chưa xem được trực tiếp? Xem video ở cuối phần Demo, hoặc đọc mã nguồn:</span><span class="en">Can't see it live? Watch the video at the end of the Demo section, or read the source:</span></p>
+        <a class="btn" href="https://github.com/trungly-hcmut/New_Trend_ICT_Event_Driven_Edge/tree/main/demo" target="_blank" rel="noopener"><span class="vi">Mã nguồn demo</span><span class="en">Demo source</span> ↗</a>
+      </div>
+    </div>
+    <div class="card rise" style="--i:1">
+      <span class="label c"><span class="vi">Kịch bản · khoảng 4 phút</span><span class="en">Script · about 4 minutes</span></span>
+      <ol class="steps">
+        <li><div><b><span class="vi">Người dùng tạo sự kiện</span><span class="en">Users create events</span></b> — <span class="vi">bấm “Mua ngay”; phản hồi cho thấy edge đã gắn <code>country</code>, <code>colo</code>, <code>receivedAt</code>.</span><span class="en">tap “Buy now”; the response shows the edge added <code>country</code>, <code>colo</code>, <code>receivedAt</code>.</span></div></li>
+        <li><div><b>Edge ingest</b> — <span class="vi">chạy</span><span class="en">run</span> <code>node simulator.js &lt;URL&gt;</code> <span class="vi">(20 người dùng ảo, 2 click/giây); log JSON chạy trong</span><span class="en">(20 virtual users, 2 clicks/s); JSON logs stream in</span> <code>wrangler tail</code>.</div></li>
+        <li><div><b><span class="vi">Real-time vs batch</span><span class="en">Real-time vs batch</span></b> — <span class="vi">cột xanh nhảy mỗi giây, cột cam đứng yên cho tới lượt cron chạy.</span><span class="en">the blue bars move every second; the amber bars freeze until the cron runs.</span></div></li>
+        <li><div><b>Flash sale</b> — <code>--burst</code>: <span class="vi">khoảng 60 người bấm trong 10 giây, Worker tự scale, không cấu hình gì thêm.</span><span class="en">about 60 people tap within 10 seconds; the Worker scales on its own.</span></div></li>
+        <li><div><b><span class="vi">Lọc bot tại edge</span><span class="en">Bot filtering at the edge</span></b> — <code>--spam</code>: <span class="vi">40 click từ một tài khoản, ô “bot bị lọc” tăng.</span><span class="en">40 clicks from one account; the “bots filtered” tile climbs.</span></div></li>
+        <li><div><b><span class="vi">Độ trễ pipeline</span><span class="en">Pipeline latency</span></b> — <span class="vi">edge → database chỉ vài trăm ms, chủ yếu do Queue gom lô.</span><span class="en">edge → database is a few hundred ms, mostly from the queue batching.</span></div></li>
+      </ol>
+    </div>
+  </div>
+  <p class="src if-web"><span class="vi">Mất mạng: chạy local</span><span class="en">No network: run locally</span> <code>npm run dev</code> <span class="vi">trong</span><span class="en">in</span> demo/worker <span class="vi">rồi mở slide với</span><span class="en">and open the slides with</span> ?demo=http://localhost:8787</p>
+  <aside class="notes">
+    <p class="vi">Trước giờ demo: gọi /reset để xoá dữ liệu, mở /dashboard toàn màn hình ở tab khác, một terminal chạy npm run tail. Chiếu QR để cả lớp vào trang shop rồi chuyển sang dashboard. Ở bước 3 nhắc lại slide Hook: với batch ta chỉ biết khi job chạy; với pipeline hướng sự kiện ta biết ngay khi sự kiện xảy ra. Ở bước 5 nói rõ bộ lọc bot chỉ là best-effort vì edge stateless.</p>
+    <p class="en">Before the demo: call /reset, open /dashboard full-screen in another tab, keep a terminal running npm run tail. Show the QR so the class joins the shop, then switch to the dashboard. At step 3, link back to the Hook slide: with batch you only know when the job runs; with an event-driven pipeline you know as it happens. At step 5, say the bot filter is best-effort because the edge is stateless.</p>
+  </aside>
+</section>
+
+<!-- 6.3 WHAT THE DEMO SHOWS -->
+<section class="slide" data-ch="6" data-sec="6.3" id="demo-lessons">
+  <h2><span class="vi">Demo cho thấy gì — và <em>chưa làm được gì</em></span><span class="en">What the demo shows — and <em>what it doesn't</em></span></h2>
+  <div class="s-body g2">
+    <div class="card rise" style="--i:0;--ch:var(--good)">
+      <span class="label c"><span class="vi">✓ Chứng minh được</span><span class="en">✓ What it proves</span></span>
+      <ul class="ul">
+        <li><span class="vi"><b>Edge xử lý gần người dùng:</b> mỗi sự kiện mang <code>colo</code> — data center Cloudflare đã nhận nó — và <code>country</code> mà không cần gọi dịch vụ nào khác.</span><span class="en"><b>The edge works near the user:</b> every event carries <code>colo</code> — the Cloudflare data centre that took it — and <code>country</code>, with no extra service call.</span></li>
+        <li><span class="vi"><b>Real-time vs batch:</b> số real-time cập nhật mỗi giây; số batch chỉ đổi khi cron chạy.</span><span class="en"><b>Real-time vs batch:</b> real-time numbers update every second; batch numbers change only when the cron runs.</span></li>
+        <li><span class="vi"><b>Không mất sự kiện:</b> Worker chỉ trả <code>ok</code> sau khi <code>EVENTS_QUEUE.send()</code> thành công; consumer lỗi thì Queue tự giao lại.</span><span class="en"><b>No lost events:</b> the Worker answers <code>ok</code> only after <code>EVENTS_QUEUE.send()</code> succeeds; if the consumer fails, the queue redelivers.</span></li>
+        <li><span class="vi"><b>Tự scale:</b> khoảng 60 người bấm trong 10 giây mà không thêm máy chủ hay cấu hình.</span><span class="en"><b>Automatic scaling:</b> about 60 people tapping in 10 seconds with no extra servers or settings.</span></li>
+      </ul>
+    </div>
+    <div class="card rise" style="--i:1;--ch:var(--warn)">
+      <span class="label c"><span class="vi">✕ Giới hạn — và cách làm chuẩn</span><span class="en">✕ Limits — and the proper fix</span></span>
+      <ul class="ul">
+        <li><span class="vi"><b>At-least-once:</b> khi Queue giao lại, bảng tổng hợp có thể bị cộng trùng → cần khoá idempotency / ID sự kiện (slide 20).</span><span class="en"><b>At-least-once:</b> on redelivery the totals can be double-counted → use an idempotency key / event ID (slide 20).</span></li>
+        <li><span class="vi"><b>Stateless:</b> bộ lọc bot nhớ trong RAM của một isolate nên chỉ là best-effort → bản chuẩn dùng Durable Objects (slide 20).</span><span class="en"><b>Stateless:</b> the bot filter lives in one isolate's memory, so it is best-effort → the proper version uses Durable Objects (slide 20).</span></li>
+        <li><span class="vi"><b>Độ trễ vài trăm ms</b> chủ yếu do Queue gom lô (<code>max_batch_timeout = 1</code>): đánh đổi độ trễ lấy hiệu quả ghi.</span><span class="en"><b>A few hundred ms of latency</b> comes mostly from queue batching (<code>max_batch_timeout = 1</code>): latency traded for write efficiency.</span></li>
+        <li><span class="vi"><b>Gói Free:</b> D1 giới hạn khoảng 100.000 dòng ghi mỗi ngày — đủ để tập dượt, đừng để simulator chạy cả ngày.</span><span class="en"><b>Free plan:</b> D1 allows about 100,000 row writes per day — plenty for rehearsals, but don't leave the simulator running all day.</span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="src">demo/README.md — <span class="vi">“Điểm nói thêm khi bị hỏi”</span><span class="en">“Talking points for questions”</span></p>
+  <aside class="notes">
+    <p class="vi">Slide này nối demo với chương 4: những gì demo làm được, và những chỗ một hệ thống thật phải làm kỹ hơn. Nếu bị hỏi “có exactly-once không”, trả lời: không, Queue giao at-least-once, nên cần idempotency key.</p>
+    <p class="en">This slide ties the demo back to chapter 4: what the demo does, and where a real system needs more care. If asked “is it exactly-once?”, answer: no, the queue is at-least-once, so you need an idempotency key.</p>
+  </aside>
+</section>
+
+<!-- 6.4 BACKUP VIDEO -->
+<!-- Video: chép demo/video/out/demo.mp4 vào assets/video/demo.mp4 -->
+<section class="slide" data-ch="6" data-sec="6.4" id="demo-video">
+  <h2><span class="vi">Video dự phòng</span><span class="en">Backup video</span></h2>
+  <div class="s-body" style="display:flex;flex-direction:column;align-items:center">
+    <div class="video-box rise" style="--i:0">
+      <video controls preload="metadata" playsinline>
+        <source src="assets/video/demo.mp4" type="video/mp4">
+      </video>
+      <div class="ph">
+        <span class="label c" style="margin:0"><span class="vi">Chưa có video</span><span class="en">No video yet</span></span>
+        <p class="small" style="margin:0"><span class="vi">Quay bằng</span><span class="en">Record it with</span> <code>cd demo/video &amp;&amp; npm run record</code>, <span class="vi">rồi chép</span><span class="en">then copy</span> <code>out/demo.mp4</code> <span class="vi">vào</span><span class="en">to</span> <code>assets/video/demo.mp4</code>.</p>
+      </div>
+    </div>
+    <p class="small muted rise" style="--i:1;margin-top:12px;text-align:center"><span class="vi">Quay tự động từ đúng kịch bản 6 bước ở slide 26, có lời thoại — dùng khi mất mạng hoặc Worker gặp sự cố.</span><span class="en">Recorded automatically from the same 6-step script on slide 26, with narration — use it if the network or the Worker fails.</span></p>
+  </div>
+  <aside class="notes">
+    <p class="vi">Chỉ dùng slide này khi demo trực tiếp gặp sự cố. Video dài khoảng 3 phút, có lời thoại theo đúng kịch bản 6 bước.</p>
+    <p class="en">Use this slide only if the live demo fails. The video is about 3 minutes long, narrated, following the same 6-step script.</p>
+  </aside>
+</section>
+
+<!-- =====================================================
      WRAP-UP
      ===================================================== -->
 <section class="slide" data-ch="e" data-sec="end" id="conclusion">
@@ -1080,6 +1288,7 @@
   <button class="tb" data-act="toc" title="Contents (M)" aria-label="Contents"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
   <button class="tb tb-notes" data-act="notes" title="Speaker notes (N)" aria-label="Toggle speaker notes" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M5 5h14v10H10l-4 4v-4H5z"/><path d="M9 9h6M9 12h4"/></svg></button>
   <button class="tb tb-mode" data-act="mode" title="Scroll view / slide view" aria-label="Switch between scroll view and slide view" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="7" rx="1.5"/><rect x="4" y="14" width="16" height="7" rx="1.5"/></svg></button>
+  <a class="tb" data-pptx href="assets/pptx/Batch-to-Realtime_VI.pptx" download title="PowerPoint (.pptx)" aria-label="Download PowerPoint"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8M9 8v5M9 8h2.5a1.75 1.75 0 0 1 0 3.5H9"/></svg></a>
   <button class="tb" data-act="print" title="Export PDF" aria-label="Export as PDF"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
   <button class="tb tb-nav" data-act="full" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
 </div>
@@ -1090,7 +1299,9 @@
 </aside>
 <div class="scrim" id="scrim"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="assets/js/figures.js"></script>
+<script src="assets/js/demo.js"></script>
 <script src="assets/js/deck.js"></script>
 </body>
 </html>

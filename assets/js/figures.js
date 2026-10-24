@@ -79,7 +79,7 @@
     });
 
     // ticker
-    const ticker = el('text', { x: '604', y: '700', 'text-anchor': 'end', class: 'mono tm', 'font-size': '11.5' }, svg);
+    const ticker = el('text', { x: '604', y: '700', 'text-anchor': 'end', class: 'mono tm ticker', 'font-size': '11.5' }, svg);
     ticker.textContent = 'evt #000000';
 
     if (reduced) return;
@@ -162,7 +162,7 @@
     }
     document.addEventListener('slide:enter', (e) => {
       if (e.detail.slide === slide) {
-        if (reduced) return;
+        if (reduced || document.documentElement.classList.contains('static')) return; // stills show a full 60
         t0 = Date.now();
         clearInterval(timer);
         timer = setInterval(tick, 200);

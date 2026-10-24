@@ -1,0 +1,13 @@
+{
+  "name": "export-pptx",
+  "private": true,
+  "type": "module",
+  "description": "Xuất slide HTML ra PowerPoint (.pptx) — ảnh Full HD, ghi chú thuyết trình, link và video demo nhúng sẵn",
+  "scripts": {
+    "export": "node export.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.50.1",
+    "pptxgenjs": "^3.12.0"
+  }
+}

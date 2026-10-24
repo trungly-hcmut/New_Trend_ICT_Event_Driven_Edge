@@ -34,6 +34,10 @@
     '4.3': { vi: 'Thách thức kỹ thuật', en: 'Engineering challenges' },
     '5.1': { vi: 'Dòng thời gian', en: 'Timeline' },
     '5.2': { vi: 'Xu hướng 2025–2026', en: 'Trends 2025–2026' },
+    '6.1': { vi: 'Kiến trúc demo', en: 'Demo architecture' },
+    '6.2': { vi: 'Demo trực tiếp', en: 'Live demo' },
+    '6.3': { vi: 'Demo cho thấy gì', en: 'What the demo shows' },
+    '6.4': { vi: 'Video dự phòng', en: 'Backup video' },
     'end': { vi: 'Kết luận', en: 'Conclusion' },
     'qa': { vi: 'Hỏi & đáp', en: 'Q&A' },
     'read': { vi: 'Đọc thêm', en: 'Further reading' },
@@ -47,9 +51,10 @@
     '3': { vi: '03 · Ai đang làm?', en: '03 · Who is doing it?' },
     '4': { vi: '04 · Khi nào KHÔNG nên?', en: '04 · When NOT to?' },
     '5': { vi: '05 · Đi về đâu?', en: '05 · Where is it heading?' },
+    '6': { vi: '06 · Demo', en: '06 · Demo' },
     'e': { vi: 'Kết thúc', en: 'Wrap-up' }
   };
-  const CH_COLOR = { '1': '--c1', '2': '--c2', '3': '--c3', '4': '--c4', '5': '--c5' };
+  const CH_COLOR = { '1': '--c1', '2': '--c2', '3': '--c3', '4': '--c4', '5': '--c5', '6': '--c6' };
 
   const L = (o) => (typeof o === 'string' ? o : `<span class="vi">${o.vi}</span><span class="en">${o.en}</span>`);
   const pad = (n) => String(n).padStart(2, '0');
@@ -69,6 +74,7 @@
     document.title = l === 'vi'
       ? 'Từ Batch đến Real-time · Event-driven, Serverless & Edge'
       : 'From Batch to Real-time · Event-driven, Serverless & Edge';
+    $$('[data-pptx]').forEach((a) => { a.href = a.getAttribute('href').replace(/_(VI|EN)\.pptx$/, `_${l.toUpperCase()}.pptx`); });
     document.dispatchEvent(new CustomEvent('lang:change', { detail: l }));
   }
   const toggleLang = () => setLang(root.lang === 'vi' ? 'en' : 'vi');
@@ -256,7 +262,8 @@
 
   /* ---------- input ---------- */
   function onKey(e) {
-    if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+    // a focused video keeps Space / arrows for play-pause and seeking
+    if (e.target.closest('input, textarea, select, video, audio, [contenteditable="true"]')) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key;
     const lk = k.length === 1 ? k.toLowerCase() : k;
@@ -408,7 +415,7 @@
     document.dispatchEvent(new CustomEvent('deck:ready'));
   }
 
-  window.Deck = { go, next, prev, setLang, get index() { return idx; }, get slides() { return slides; }, get docMode() { return docMode; } };
+  window.Deck = { go, next, prev, setLang, chapters: CHAPTERS, get index() { return idx; }, get slides() { return slides; }, get docMode() { return docMode; } };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
