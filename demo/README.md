@@ -59,7 +59,7 @@ Chuẩn bị: `GET /reset?key=…`, mở `/dashboard` toàn màn hình, một te
 3. **Cả lớp tham gia** – chiếu QR, mọi người bấm "Mua ngay": đồ thị lưu lượng vọt lên, Worker tự scale, không cần cấu hình gì.
 4. **Lọc bot tại edge** – `node simulator/simulator.js <URL> --spam`: ô "bot bị lọc" tăng, feed hiện dòng đỏ.
 5. **Phân tán toàn cầu** – `node simulator/simulator.js <URL> --global`: 12 probe ở 12 nước gọi `/ping`, mỗi nơi do data center gần nhất xử lý (FRA, NRT, GRU, SIN...). Cùng một Worker, không cấu hình vùng.
-6. **Độ trễ pipeline** – ô "edge → database" khoảng vài trăm ms, chủ yếu do Queue gom lô (`max_batch_timeout = 1`): đánh đổi giữa độ trễ và hiệu quả ghi.
+6. **Độ trễ pipeline** – ô "edge → database" khoảng 1–2 giây, chủ yếu do Queue gom lô (`max_batch_timeout = 1`): đánh đổi giữa độ trễ và hiệu quả ghi.
 
 Quay sẵn video các bước trên để dự phòng.
 

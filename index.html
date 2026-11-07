@@ -1097,7 +1097,7 @@
         <li><div><b><span class="vi">Real-time vs batch</span><span class="en">Real-time vs batch</span></b> — <span class="vi">cột xanh nhảy mỗi giây, cột cam đứng yên cho tới lượt cron chạy.</span><span class="en">the blue bars move every second; the amber bars freeze until the cron runs.</span></div></li>
         <li><div><b>Flash sale</b> — <code>--burst</code>: <span class="vi">khoảng 60 người bấm trong 10 giây, Worker tự scale, không cấu hình gì thêm.</span><span class="en">about 60 people tap within 10 seconds; the Worker scales on its own.</span></div></li>
         <li><div><b><span class="vi">Lọc bot tại edge</span><span class="en">Bot filtering at the edge</span></b> — <code>--spam</code>: <span class="vi">40 click từ một tài khoản, ô “bot bị lọc” tăng.</span><span class="en">40 clicks from one account; the “bots filtered” tile climbs.</span></div></li>
-        <li><div><b><span class="vi">Độ trễ pipeline</span><span class="en">Pipeline latency</span></b> — <span class="vi">edge → database chỉ vài trăm ms, chủ yếu do Queue gom lô.</span><span class="en">edge → database is a few hundred ms, mostly from the queue batching.</span></div></li>
+        <li><div><b><span class="vi">Độ trễ pipeline</span><span class="en">Pipeline latency</span></b> — <span class="vi">edge → database khoảng 1–2 giây, chủ yếu do Queue gom lô.</span><span class="en">edge → database takes about 1–2 seconds, mostly from the queue batching.</span></div></li>
       </ol>
     </div>
   </div>
@@ -1126,7 +1126,7 @@
       <ul class="ul">
         <li><span class="vi"><b>At-least-once:</b> khi Queue giao lại, bảng tổng hợp có thể bị cộng trùng → cần khoá idempotency / ID sự kiện (slide 20).</span><span class="en"><b>At-least-once:</b> on redelivery the totals can be double-counted → use an idempotency key / event ID (slide 20).</span></li>
         <li><span class="vi"><b>Stateless:</b> bộ lọc bot nhớ trong RAM của một isolate nên chỉ là best-effort → bản chuẩn dùng Durable Objects (slide 20).</span><span class="en"><b>Stateless:</b> the bot filter lives in one isolate's memory, so it is best-effort → the proper version uses Durable Objects (slide 20).</span></li>
-        <li><span class="vi"><b>Độ trễ vài trăm ms</b> chủ yếu do Queue gom lô (<code>max_batch_timeout = 1</code>): đánh đổi độ trễ lấy hiệu quả ghi.</span><span class="en"><b>A few hundred ms of latency</b> comes mostly from queue batching (<code>max_batch_timeout = 1</code>): latency traded for write efficiency.</span></li>
+        <li><span class="vi"><b>Độ trễ khoảng 1–2 giây</b> chủ yếu do Queue gom lô (<code>max_batch_timeout = 1</code>): đánh đổi độ trễ lấy hiệu quả ghi.</span><span class="en"><b>About 1–2 seconds of latency</b> comes mostly from queue batching (<code>max_batch_timeout = 1</code>): latency traded for write efficiency.</span></li>
         <li><span class="vi"><b>Gói Free:</b> D1 giới hạn khoảng 100.000 dòng ghi mỗi ngày — đủ để tập dượt, đừng để simulator chạy cả ngày.</span><span class="en"><b>Free plan:</b> D1 allows about 100,000 row writes per day — plenty for rehearsals, but don't leave the simulator running all day.</span></li>
       </ul>
     </div>
