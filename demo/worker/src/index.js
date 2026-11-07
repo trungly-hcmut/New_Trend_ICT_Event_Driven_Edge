@@ -81,12 +81,17 @@ async function handleEvent(req, env, ctx) {
 
   console.log(JSON.stringify({ ...event, receivedMs: undefined })); // xem real-time bằng `wrangler tail`
 
-  if (env.EVENTS_QUEUE) {
+  let via = "queue";
+  try {
+    if (!env.EVENTS_QUEUE) throw new Error("no queue binding");
     await env.EVENTS_QUEUE.send(event);
-  } else {
-    ctx.waitUntil(storeEvents(env, [event])); // không có Queue thì ghi thẳng DB
+  } catch (err) {
+    // Không có Queue hoặc Queue lỗi (vd. hết hạn mức gói Free) → ghi thẳng DB, không làm mất sự kiện
+    via = "direct";
+    console.log(JSON.stringify({ queueFallback: String(err?.message ?? err) }));
+    ctx.waitUntil(storeEvents(env, [event]));
   }
-  return Response.json({ ok: true, event });
+  return Response.json({ ok: true, via, event });
 }
 
 // ---------- Xử lý + lưu trữ (streaming aggregation) ----------

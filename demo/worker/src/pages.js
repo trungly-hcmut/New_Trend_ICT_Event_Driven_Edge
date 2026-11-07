@@ -264,11 +264,14 @@ export const dashboardPage = `<!doctype html>
       nextBatchAt += batchEvery * 1000;
       fetch("/cdn-cgi/handler/scheduled").then(function (r) { if (!r.ok) return fetch("/__scheduled"); });
     }
-    var next = isLocal ? nextBatchAt + serverOffset : Math.ceil(now / 120000) * 120000;
-    var left = Math.max(0, Math.round((next - now) / 1000));
+    // Cron thật trên Cloudflare chạy trễ vài chục giây so với mốc phút chẵn → tính từ lần chạy thực tế gần nhất
+    var next = isLocal ? nextBatchAt + serverOffset
+      : lastBatchRun ? lastBatchRun + 120000 : Math.ceil(now / 120000) * 120000;
+    var left = Math.round((next - now) / 1000);
     var txt = lastBatchRun ? "Lần chạy cuối: " + time(lastBatchRun) : "Chưa chạy lần nào";
-    document.getElementById("batch-info").textContent =
-      txt + " · lần tới sau " + Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0");
+    document.getElementById("batch-info").textContent = left > 0
+      ? txt + " · lần tới sau " + Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0")
+      : txt + " · cron đang chạy…";
   }
 
   var busy = false, live = document.getElementById("live");

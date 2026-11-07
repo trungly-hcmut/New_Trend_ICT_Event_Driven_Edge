@@ -6,7 +6,7 @@ compatibility_date = "2025-06-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "clickstream"
-database_id = "REPLACE_WITH_D1_ID"   # lấy từ lệnh: npx wrangler d1 create clickstream
+database_id = "e6361d1e-dab6-49bc-925a-648d60817fcc"
 
 # Tầng hàng đợi: Cloudflare Queues (đệm giữa edge và database)
 [[queues.producers]]
@@ -22,5 +22,6 @@ max_batch_timeout = 1      # giây – giữ độ trễ thấp cho demo
 [triggers]
 crons = ["*/2 * * * *"]
 
-[vars]
-RESET_KEY = "demo123"      # khóa để xoá dữ liệu trước buổi demo
+# RESET_KEY (khóa cho /reset và /batch) là secret, không ghi ở đây:
+#   deploy thật: npx wrangler secret put RESET_KEY
+#   chạy local:  ghi RESET_KEY=... vào file .dev.vars (đã gitignore)
