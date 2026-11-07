@@ -27,6 +27,8 @@ export default {
         return html(dashboardPage);
       case "/event":
         return handleEvent(req, env, ctx);
+      case "/ping":
+        return handlePing(req, url, env, ctx);
       case "/stats":
         return Response.json(await getStats(env), { headers: { "Cache-Control": "no-store" } });
       case "/reset":
@@ -60,7 +62,26 @@ async function handleEvent(req, env, ctx) {
   } catch {
     return Response.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
   }
+  return ingest(e, req, env, ctx);
+}
 
+// GET /ping?page=...&userId=... – cùng đường ingest như /event, nhưng dùng GET để các
+// probe đo lường toàn cầu (Globalping, chỉ gửi được GET) bắn từ nhiều quốc gia.
+function handlePing(req, url, env, ctx) {
+  const q = url.searchParams;
+  return ingest(
+    {
+      type: q.get("type") ?? "view",
+      page: q.get("page") ?? "/product/iphone-16",
+      userId: q.get("userId") ?? "probe-" + Math.random().toString(36).slice(2, 8),
+    },
+    req,
+    env,
+    ctx
+  );
+}
+
+async function ingest(e, req, env, ctx) {
   const type = e.type ?? "click";
   if (!VALID_TYPES.has(type)) return bad("type không hợp lệ");
   if (typeof e.page !== "string" || !e.page.startsWith("/") || e.page.length > 100) return bad("page không hợp lệ");

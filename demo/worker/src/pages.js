@@ -117,6 +117,10 @@ export const dashboardPage = `<!doctype html>
   .url { text-align:center; margin-top:10px; font-size:13px; color:var(--muted); word-break:break-all; }
   table { width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }
   td { padding:5px 4px; border-bottom:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+  th { padding:5px 4px; border-bottom:1px solid var(--border); text-align:left; font-size:11px; font-weight:600;
+       color:var(--muted); text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; }
+  td.colo b { font-weight:700; }
+  td.colo span { color:var(--muted); }
   tr.bot td { color:var(--bad); }
   tr.new { animation:flash 1s; }
   @keyframes flash { from { background:rgba(59,160,255,.25); } to { background:transparent; } }
@@ -165,10 +169,13 @@ export const dashboardPage = `<!doctype html>
   <div class="grid-side">
     <div class="panel">
       <h2>Sự kiện mới nhất</h2>
-      <table><tbody id="feed"></tbody></table>
+      <table>
+        <thead><tr><th>Giờ</th><th>Loại</th><th>Trang</th><th>User</th><th>Nơi gửi</th><th>Edge xử lý</th><th>Độ trễ</th></tr></thead>
+        <tbody id="feed"></tbody>
+      </table>
     </div>
     <div class="panel">
-      <h2>Quốc gia (req.cf.country)</h2>
+      <h2>Nơi gửi (req.cf.country)</h2>
       <table><tbody id="countries"></tbody></table>
     </div>
   </div>
@@ -200,6 +207,13 @@ export const dashboardPage = `<!doctype html>
   function short(p) { return p.replace("/product/", ""); }
   function toMap(rows) { var m = {}; rows.forEach(function (r) { m[r.page] = r.count; }); return m; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // Mã colo (mã sân bay) → tên thành phố, cho các data center hay gặp
+  var COLO = { SIN:"Singapore", SGN:"TP.HCM", HAN:"Hà Nội", HKG:"Hồng Kông", NRT:"Tokyo", KIX:"Osaka", ICN:"Seoul",
+    TPE:"Đài Bắc", BKK:"Bangkok", KUL:"Kuala Lumpur", CGK:"Jakarta", MNL:"Manila", BOM:"Mumbai", DEL:"New Delhi",
+    SYD:"Sydney", MEL:"Melbourne", FRA:"Frankfurt", LHR:"London", CDG:"Paris", AMS:"Amsterdam", MAD:"Madrid",
+    ORD:"Chicago", IAD:"Washington", EWR:"Newark", LAX:"Los Angeles", SJC:"San Jose", SEA:"Seattle", DFW:"Dallas",
+    ATL:"Atlanta", MIA:"Miami", PIT:"Pittsburgh", YYZ:"Toronto", YUL:"Montréal", GRU:"São Paulo", JNB:"Johannesburg" };
+  function colo(c) { return "<b>" + esc(c) + "</b>" + (COLO[c] ? " <span>" + COLO[c] + "</span>" : ""); }
   function time(ms) { return new Date(ms).toLocaleTimeString("vi-VN"); }
 
   var lastFeedTop = null, lastBatchRun = null, serverOffset = 0;
@@ -236,10 +250,10 @@ export const dashboardPage = `<!doctype html>
       var isNew = lastFeedTop !== null && e.received_ms > lastFeedTop;
       return "<tr class='" + (e.is_bot ? "bot " : "") + (isNew ? "new" : "") + "'>" +
         "<td>" + time(e.received_ms) + "</td><td>" + esc(e.type) + "</td><td>" + esc(short(e.page)) + "</td>" +
-        "<td>" + esc(e.user_id) + "</td><td>" + esc(e.country) + " · " + esc(e.colo) + "</td>" +
+        "<td>" + esc(e.user_id) + "</td><td>" + esc(e.country) + "</td><td class='colo'>" + colo(e.colo) + "</td>" +
         "<td>" + (e.is_bot ? "🤖 bot" : (e.stored_ms - e.received_ms) + "ms") + "</td></tr>";
     }).join("");
-    document.getElementById("feed").innerHTML = feed || "<tr><td>Chưa có sự kiện</td></tr>";
+    document.getElementById("feed").innerHTML = feed || "<tr><td colspan='7'>Chưa có sự kiện</td></tr>";
     if (s.recent.length) lastFeedTop = s.recent[0].received_ms;
 
     var cmax = Math.max.apply(null, s.countries.map(function (c) { return c.count; }).concat([1]));

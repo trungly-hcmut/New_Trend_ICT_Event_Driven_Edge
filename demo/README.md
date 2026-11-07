@@ -16,6 +16,7 @@ Demo cho Slide 14 – mô phỏng website bán hàng: người dùng click → s
 |---|---|
 | `GET /` | Trang shop "Flash Sale 11/11" để cả lớp quét QR và bấm |
 | `POST /event` | Edge ingest: validate, gắn `country`, `colo`, `receivedAt`, lọc bot |
+| `GET /ping?page=…` | Như `/event` nhưng dùng GET, cho probe Globalping (`simulator.js --global`) |
 | `GET /dashboard` | Dashboard chiếu lên màn hình |
 | `GET /stats` | API số liệu cho dashboard |
 | `GET /batch?key=…` | Chạy job batch ngay (không cần chờ cron) |
@@ -57,7 +58,8 @@ Chuẩn bị: `GET /reset?key=…`, mở `/dashboard` toàn màn hình, một te
 2. **Real-time vs batch** – cột xanh nhảy liên tục, cột cam đứng yên đến khi cron chạy (đếm ngược ở dưới). Nhắc lại câu chuyện giao dịch lúc 2h sáng ở Slide 3.
 3. **Cả lớp tham gia** – chiếu QR, mọi người bấm "Mua ngay": đồ thị lưu lượng vọt lên, Worker tự scale, không cần cấu hình gì.
 4. **Lọc bot tại edge** – `node simulator/simulator.js <URL> --spam`: ô "bot bị lọc" tăng, feed hiện dòng đỏ.
-5. **Độ trễ pipeline** – ô "edge → database" khoảng vài trăm ms, chủ yếu do Queue gom lô (`max_batch_timeout = 1`): đánh đổi giữa độ trễ và hiệu quả ghi.
+5. **Phân tán toàn cầu** – `node simulator/simulator.js <URL> --global`: 12 probe ở 12 nước gọi `/ping`, mỗi nơi do data center gần nhất xử lý (FRA, NRT, GRU, SIN...). Cùng một Worker, không cấu hình vùng.
+6. **Độ trễ pipeline** – ô "edge → database" khoảng vài trăm ms, chủ yếu do Queue gom lô (`max_batch_timeout = 1`): đánh đổi giữa độ trễ và hiệu quả ghi.
 
 Quay sẵn video các bước trên để dự phòng.
 
