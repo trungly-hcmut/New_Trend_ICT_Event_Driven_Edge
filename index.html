@@ -425,64 +425,70 @@
 
 <!-- 2.4 HOW THE EDGE WORKS -->
 <section class="slide" data-ch="2" data-sec="2.4" id="edge">
-  <h2><span class="vi">Edge hoạt động thế nào? Ví dụ <em>Cloudflare</em></span><span class="en">How does the edge work? The <em>Cloudflare</em> example</span></h2>
-  <div class="s-body g-4-8">
-    <div class="stack">
-      <div class="card kpi sm rise" style="--i:0"><div class="v">348</div><div class="l" style="margin-top:4px"><span class="vi">thành phố có mặt mạng Cloudflare; <b>95%</b> người dùng Internet nằm trong phạm vi khoảng <b>50ms</b></span><span class="en">cities on Cloudflare's network; <b>95%</b> of Internet users are within about <b>50 ms</b></span><sup class="r">[4]</sup></div></div>
-      <div class="card kpi sm rise" style="--i:1">
-        <div class="v">3</div>
-        <div class="l" style="margin-top:4px"><span class="vi">điểm tại Việt Nam</span><span class="en">locations in Vietnam</span><sup class="r">[4]</sup></div>
-        <div class="chips mt-s"><span class="chip c"><i></i>HAN · <span class="vi">Hà Nội</span><span class="en">Hanoi</span></span><span class="chip c"><i></i>DAD · <span class="vi">Đà Nẵng</span><span class="en">Da Nang</span></span><span class="chip c"><i></i>SGN · TP.HCM</span></div>
+  <h2><span class="vi">Edge hoạt động thế nào? Hình dung như <em>giao hàng</em></span><span class="en">How does the edge work? Think of <em>parcel delivery</em></span></h2>
+  <div class="s-body g2">
+    <div class="card rise fig col" style="--i:0">
+      <span class="label c"><span class="vi">1 · Gần thì nhanh</span><span class="en">1 · Closer means faster</span></span>
+      <svg viewBox="0 0 520 236" role="img" aria-label="Without edge, each request travels to a server in the US and back; with edge, it is answered at a point in Ho Chi Minh City">
+        <text x="0" y="14" class="mono tb" font-size="11.5" font-weight="700" letter-spacing="1"><tspan class="vi">KHÔNG CÓ EDGE</tspan><tspan class="en">WITHOUT EDGE</tspan></text>
+        <g style="fill:var(--ink-2)"><circle cx="36" cy="50" r="8"/><path d="M23 76 a13 13 0 0 1 26 0z"/></g>
+        <text x="36" y="98" text-anchor="middle" font-size="12" class="t2 vi">Bạn · TP.HCM</text><text x="36" y="98" text-anchor="middle" font-size="12" class="t2 en">You · HCMC</text>
+        <rect x="380" y="34" width="140" height="52" rx="10" class="box-bad"/>
+        <text x="450" y="65" text-anchor="middle" font-size="13" font-weight="600" class="vi">Máy chủ ở Mỹ</text><text x="450" y="65" text-anchor="middle" font-size="13" font-weight="600" class="en">Server in the US</text>
+        <path d="M62 50 C 160 6, 290 6, 376 50" class="ln-bad dash" marker-end="url(#ah-bad)"/>
+        <path d="M376 72 C 290 116, 160 116, 64 72" class="ln-bad dash" marker-end="url(#ah-bad)"/>
+        <text x="219" y="66" text-anchor="middle" font-size="12" class="tb vi">đi rất xa, mỗi lần hỏi là một chuyến</text><text x="219" y="66" text-anchor="middle" font-size="12" class="tb en">a long trip for every single request</text>
+        <text x="0" y="138" class="mono tg" font-size="11.5" font-weight="700" letter-spacing="1"><tspan class="vi">CÓ EDGE</tspan><tspan class="en">WITH EDGE</tspan></text>
+        <g style="fill:var(--ink-2)"><circle cx="36" cy="172" r="8"/><path d="M23 198 a13 13 0 0 1 26 0z"/></g>
+        <text x="36" y="220" text-anchor="middle" font-size="12" class="t2 vi">Bạn · TP.HCM</text><text x="36" y="220" text-anchor="middle" font-size="12" class="t2 en">You · HCMC</text>
+        <rect x="150" y="158" width="150" height="52" rx="10" class="box-ch"/>
+        <text x="225" y="189" text-anchor="middle" font-size="13" font-weight="600" class="vi">Điểm edge · TP.HCM</text><text x="225" y="189" text-anchor="middle" font-size="13" font-weight="600" class="en">Edge point · HCMC</text>
+        <line x1="62" y1="176" x2="146" y2="176" class="ln-good" marker-end="url(#ah-good)"/>
+        <line x1="150" y1="192" x2="66" y2="192" class="ln-good" marker-end="url(#ah-good)"/>
+        <text x="316" y="182" font-size="12" class="tg vi">trả lời ngay trong thành phố</text><text x="316" y="182" font-size="12" class="tg en">answered right in the city</text>
+        <circle r="4" class="pkt glow" style="fill:var(--bad)"><animateMotion dur="3.6s" repeatCount="indefinite" path="M62 50 C 160 6, 290 6, 376 50 L376 72 C 290 116, 160 116, 64 72"/></circle>
+        <circle r="4" class="pkt glow" style="fill:var(--good)"><animateMotion dur="1.2s" repeatCount="indefinite" path="M62 176 H146 V192 H66"/></circle>
+      </svg>
+      <p class="small mt-s" style="margin-bottom:0"><span class="vi">Giống đặt hàng online: hàng nằm ở kho tổng bên kia địa cầu thì phải chờ lâu, hàng có sẵn ở kho trong thành phố thì giao ngay. Edge là đặt sẵn những “kho xử lý” như vậy ở gần người dùng.</span><span class="en">Like ordering online: if the item sits in a central warehouse across the world you wait, if it is in a warehouse in your city it arrives right away. The edge puts those “processing warehouses” close to users.</span></p>
+      <div class="card-foot">
+        <span class="label" style="margin-bottom:6px"><span class="vi">Ví dụ thật · Cloudflare</span><span class="en">Real example · Cloudflare</span><sup class="r">[4]</sup></span>
+        <div class="chips"><span class="chip c"><span class="vi">348 thành phố</span><span class="en">348 cities</span></span><span class="chip c"><i></i>HAN · <span class="vi">Hà Nội</span><span class="en">Hanoi</span></span><span class="chip c"><i></i>DAD · <span class="vi">Đà Nẵng</span><span class="en">Da Nang</span></span><span class="chip c"><i></i>SGN · TP.HCM</span></div>
       </div>
-      <div class="card kpi sm rise" style="--i:2"><div class="v">~10×</div><div class="l" style="margin-top:4px"><span class="vi">giảm cold start (09/2025) nhờ định tuyến request tới máy chủ đã nạp sẵn Worker</span><span class="en">fewer cold starts (09/2025) by routing requests to servers that already have the Worker loaded</span><sup class="r">[7]</sup></div></div>
     </div>
-    <div class="stack">
-      <div class="card rise fig" style="--i:3;padding-bottom:10px">
-        <svg viewBox="0 0 660 262" role="img" aria-label="VM, container and isolate: each step is lighter and denser">
-          <!-- VM -->
-          <text x="0" y="16" font-size="14" font-weight="700" class="vi">Máy ảo (VM)</text><text x="0" y="16" font-size="14" font-weight="700" class="en">Virtual machine</text>
-          <rect x="0" y="30" width="100" height="190" rx="8" class="ln"/><rect x="110" y="30" width="100" height="190" rx="8" class="ln"/>
-          <rect x="6" y="36" width="88" height="34" rx="5" class="box"/><text x="50" y="58" text-anchor="middle" font-size="12" class="t2">App</text>
-          <rect x="6" y="76" width="88" height="34" rx="5" class="box"/><text x="50" y="98" text-anchor="middle" font-size="12" class="t2">Runtime</text>
-          <rect x="6" y="116" width="88" height="98" rx="5" class="box-2"/><text x="50" y="170" text-anchor="middle" font-size="12" class="t2">Guest OS</text>
-          <rect x="116" y="36" width="88" height="34" rx="5" class="box"/><text x="160" y="58" text-anchor="middle" font-size="12" class="t2">App</text>
-          <rect x="116" y="76" width="88" height="34" rx="5" class="box"/><text x="160" y="98" text-anchor="middle" font-size="12" class="t2">Runtime</text>
-          <rect x="116" y="116" width="88" height="98" rx="5" class="box-2"/><text x="160" y="170" text-anchor="middle" font-size="12" class="t2">Guest OS</text>
-          <rect x="0" y="226" width="210" height="32" rx="6" class="box-2"/><text x="105" y="247" text-anchor="middle" font-size="12" class="mono tm">Hypervisor</text>
-          <!-- Container -->
-          <text x="225" y="16" font-size="14" font-weight="700">Container</text>
-          <g>
-            <rect x="225" y="118" width="48" height="102" rx="6" class="ln"/><rect x="279" y="118" width="48" height="102" rx="6" class="ln"/><rect x="333" y="118" width="48" height="102" rx="6" class="ln"/><rect x="387" y="118" width="48" height="102" rx="6" class="ln"/>
-            <rect x="229" y="122" width="40" height="30" rx="4" class="box"/><rect x="283" y="122" width="40" height="30" rx="4" class="box"/><rect x="337" y="122" width="40" height="30" rx="4" class="box"/><rect x="391" y="122" width="40" height="30" rx="4" class="box"/>
-            <rect x="229" y="156" width="40" height="60" rx="4" class="box-2"/><rect x="283" y="156" width="40" height="60" rx="4" class="box-2"/><rect x="337" y="156" width="40" height="60" rx="4" class="box-2"/><rect x="391" y="156" width="40" height="60" rx="4" class="box-2"/>
-            <text x="249" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text><text x="303" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text><text x="357" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text><text x="411" y="141" text-anchor="middle" font-size="10.5" class="t2">App</text>
-            <text x="249" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text><text x="303" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text><text x="357" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text><text x="411" y="190" text-anchor="middle" font-size="10.5" class="t2">Node</text>
-          </g>
-          <rect x="225" y="226" width="210" height="32" rx="6" class="box-2"/><text x="330" y="247" text-anchor="middle" font-size="12" class="mono tm">Host OS + engine</text>
-          <!-- Isolates -->
-          <text x="450" y="16" font-size="14" font-weight="700" class="tc">V8 isolates</text>
-          <g class="fill-ch">
-            <rect x="452" y="104" width="22" height="18" rx="3"/><rect x="480" y="104" width="22" height="18" rx="3"/><rect x="508" y="104" width="22" height="18" rx="3"/><rect x="536" y="104" width="22" height="18" rx="3"/><rect x="564" y="104" width="22" height="18" rx="3"/><rect x="592" y="104" width="22" height="18" rx="3"/><rect x="620" y="104" width="22" height="18" rx="3"/>
-            <rect x="452" y="128" width="22" height="18" rx="3"/><rect x="480" y="128" width="22" height="18" rx="3"/><rect x="508" y="128" width="22" height="18" rx="3"/><rect x="536" y="128" width="22" height="18" rx="3"/><rect x="564" y="128" width="22" height="18" rx="3"/><rect x="592" y="128" width="22" height="18" rx="3"/><rect x="620" y="128" width="22" height="18" rx="3"/>
-            <rect x="452" y="152" width="22" height="18" rx="3"/><rect x="480" y="152" width="22" height="18" rx="3"/><rect x="508" y="152" width="22" height="18" rx="3"/><rect x="536" y="152" width="22" height="18" rx="3"/><rect x="564" y="152" width="22" height="18" rx="3"/><rect x="592" y="152" width="22" height="18" rx="3"/><rect x="620" y="152" width="22" height="18" rx="3"/>
-            <rect x="452" y="176" width="22" height="18" rx="3"/><rect x="480" y="176" width="22" height="18" rx="3"/><rect x="508" y="176" width="22" height="18" rx="3"/><rect x="536" y="176" width="22" height="18" rx="3"/><rect x="564" y="176" width="22" height="18" rx="3"/><rect x="592" y="176" width="22" height="18" rx="3"/><rect x="620" y="176" width="22" height="18" rx="3"/>
-            <rect x="452" y="200" width="22" height="18" rx="3"/><rect x="480" y="200" width="22" height="18" rx="3"/><rect x="508" y="200" width="22" height="18" rx="3"/><rect x="536" y="200" width="22" height="18" rx="3"/><rect x="564" y="200" width="22" height="18" rx="3"/><rect x="592" y="200" width="22" height="18" rx="3"/><rect x="620" y="200" width="22" height="18" rx="3" opacity=".45"/>
-          </g>
-          <rect x="450" y="226" width="194" height="32" rx="6" class="box-ch"/><text x="547" y="247" text-anchor="middle" font-size="12" class="mono vi">1 runtime V8 chạy sẵn</text><text x="547" y="247" text-anchor="middle" font-size="12" class="mono en">one warm V8 runtime</text>
-          <text x="547" y="62" text-anchor="middle" font-size="12.5" class="mono tc" font-weight="700">~100× <tspan class="vi">nhanh hơn</tspan><tspan class="en">faster start</tspan></text>
-          <text x="547" y="82" text-anchor="middle" font-size="12.5" class="mono tc" font-weight="700">~10× <tspan class="vi">ít bộ nhớ</tspan><tspan class="en">less memory</tspan></text>
-        </svg>
-      </div>
-      <div class="callout rise small" style="--i:4">
-        <span class="vi"><b>Ví von:</b> container giống như mỗi khách đến thì xây một căn nhà mới; isolate giống như chia phòng trong một khách sạn đã xây sẵn — khách đến là nhận phòng ngay. Một máy chủ chạy hàng trăm đến hàng nghìn isolate, mỗi isolate có bộ nhớ tách biệt.</span>
-        <span class="en"><b>Analogy:</b> a container is like building a new house for every guest; an isolate is like giving each guest a room in a hotel that is already built. One server runs hundreds to thousands of isolates, each with its own memory.</span><sup class="r">[5]</sup>
+    <div class="card rise fig col" style="--i:1">
+      <span class="label c"><span class="vi">2 · Nhiều nơi mà vẫn nhẹ</span><span class="en">2 · Everywhere, yet light</span></span>
+      <svg viewBox="0 0 520 236" role="img" aria-label="A container is like building a new house for every guest; an isolate is like a room in a hotel that is already built">
+        <text x="0" y="14" class="mono tm" font-size="11.5" font-weight="700" letter-spacing="1">CONTAINER</text>
+        <g class="box"><path d="M8 112 L38 84 L68 112 Z"/><rect x="14" y="112" width="48" height="56" rx="2"/><path d="M86 112 L116 84 L146 112 Z"/><rect x="92" y="112" width="48" height="56" rx="2"/></g>
+        <path d="M164 112 L194 84 L224 112 Z" class="ln dash"/><rect x="170" y="112" width="48" height="56" rx="2" class="ln dash"/>
+        <g style="fill:var(--surface-3)"><rect x="32" y="140" width="12" height="28"/><rect x="110" y="140" width="12" height="28"/></g>
+        <text x="194" y="146" text-anchor="middle" font-size="18" class="tm">…</text>
+        <text x="116" y="198" text-anchor="middle" font-size="12.5" class="vi">mỗi khách → xây một căn nhà</text><text x="116" y="198" text-anchor="middle" font-size="12.5" class="en">every guest → build a new house</text>
+        <text x="116" y="218" text-anchor="middle" font-size="12" class="tb vi">chậm, tốn chỗ</text><text x="116" y="218" text-anchor="middle" font-size="12" class="tb en">slow, takes space</text>
+        <line x1="258" y1="40" x2="258" y2="210" class="ln dash"/>
+        <text x="292" y="14" class="mono tc" font-size="11.5" font-weight="700" letter-spacing="1">ISOLATE</text>
+        <rect x="318" y="34" width="168" height="134" rx="6" class="box-ch"/>
+        <g class="fill-ch">
+          <rect x="332" y="48" width="18" height="14" rx="2"/><rect x="358" y="48" width="18" height="14" rx="2" opacity=".35"/><rect x="384" y="48" width="18" height="14" rx="2"/><rect x="410" y="48" width="18" height="14" rx="2"/><rect x="436" y="48" width="18" height="14" rx="2" opacity=".35"/><rect x="462" y="48" width="12" height="14" rx="2"/>
+          <rect x="332" y="72" width="18" height="14" rx="2" opacity=".35"/><rect x="358" y="72" width="18" height="14" rx="2"/><rect x="384" y="72" width="18" height="14" rx="2"/><rect x="410" y="72" width="18" height="14" rx="2" opacity=".35"/><rect x="436" y="72" width="18" height="14" rx="2"/><rect x="462" y="72" width="12" height="14" rx="2"/>
+          <rect x="332" y="96" width="18" height="14" rx="2"/><rect x="358" y="96" width="18" height="14" rx="2"/><rect x="384" y="96" width="18" height="14" rx="2" opacity=".35"/><rect x="410" y="96" width="18" height="14" rx="2"/><rect x="436" y="96" width="18" height="14" rx="2"/><rect x="462" y="96" width="12" height="14" rx="2" opacity=".35"/>
+          <rect x="332" y="120" width="18" height="14" rx="2"/><rect x="358" y="120" width="18" height="14" rx="2" opacity=".35"/><rect x="384" y="120" width="18" height="14" rx="2"/><rect x="410" y="120" width="18" height="14" rx="2"/><rect x="436" y="120" width="18" height="14" rx="2"/><rect x="462" y="120" width="12" height="14" rx="2"/>
+        </g>
+        <rect x="388" y="144" width="28" height="24" rx="2" style="fill:var(--surface)"/>
+        <text x="402" y="198" text-anchor="middle" font-size="12.5" class="vi">mỗi khách → một phòng có sẵn</text><text x="402" y="198" text-anchor="middle" font-size="12.5" class="en">every guest → a ready-made room</text>
+        <text x="402" y="218" text-anchor="middle" font-size="12" class="tg vi">vào ở ngay</text><text x="402" y="218" text-anchor="middle" font-size="12" class="tg en">move in at once</text>
+      </svg>
+      <p class="small mt-s" style="margin-bottom:0"><span class="vi">Đặt code ở hàng trăm nơi thì mỗi lần chạy phải thật nhẹ. Thay vì dựng riêng một container cho mỗi lần chạy, Cloudflare Workers dùng <b>isolate</b>: nhiều “phòng” tách biệt trong một chương trình đang chạy sẵn.</span><span class="en">Running code in hundreds of places means every run must be light. Instead of starting a container each time, Cloudflare Workers use <b>isolates</b>: many separate “rooms” inside one program that is already running.</span></p>
+      <div class="card-foot">
+        <span class="label" style="margin-bottom:6px"><span class="vi">So với Node trong container, theo Cloudflare</span><span class="en">Compared with Node in a container, per Cloudflare</span><sup class="r">[5]</sup></span>
+        <div class="chips"><span class="chip c"><span class="vi">~100× khởi động nhanh hơn</span><span class="en">~100× faster start</span></span><span class="chip c"><span class="vi">~10× ít bộ nhớ hơn</span><span class="en">~10× less memory</span></span></div>
       </div>
     </div>
   </div>
-  <p class="src">[4] Cloudflare Global Network · [5] Cloudflare Docs, How Workers works — <span class="vi">so với một tiến trình Node trong container, theo Cloudflare</span><span class="en">vs. a Node process in a container, per Cloudflare</span> · [7] Cloudflare Birthday Week 2025</p>
+  <p class="src">[4] Cloudflare Global Network · [5] Cloudflare Docs, How Workers works · <span class="vi">Sơ đồ minh hoạ, không theo tỉ lệ</span><span class="en">Illustrative diagrams, not to scale</span></p>
   <aside class="notes">
-    <p class="vi">Thay vì khởi động một container hay máy ảo cho mỗi hàm, Workers tạo các isolate bên trong một runtime đang chạy sẵn. Theo Cloudflare, isolate khởi động nhanh hơn khoảng 100 lần và dùng ít hơn khoảng 10 lần bộ nhớ. Ví von: container là mỗi khách đến thì xây một căn nhà mới; isolate là chia phòng trong khách sạn đã xây sẵn, đến là nhận phòng ngay.</p>
-    <p class="en">Instead of booting a container or VM per function, Workers create isolates inside a runtime that is already running. Per Cloudflare, isolates start about 100× faster and use about 10× less memory. Analogy: a container builds a new house for every guest; an isolate hands out a room in a hotel that already exists.</p>
+    <p class="vi">Hình dung edge như giao hàng: hàng ở kho tổng bên kia địa cầu thì chờ lâu, hàng có ở kho trong thành phố thì giao ngay. Không có edge, mỗi yêu cầu phải sang tận máy chủ ở Mỹ rồi quay về; có edge, nó được trả lời ngay tại TP.HCM. Ví dụ thật: Cloudflare có điểm edge ở 348 thành phố, Việt Nam có 3 điểm. Để chạy code ở nhiều nơi mà vẫn nhẹ, Cloudflare dùng isolate: như phòng khách sạn có sẵn thay vì xây nhà mới cho mỗi khách.</p>
+    <p class="en">Think of the edge as parcel delivery: an item in a central warehouse across the world takes long, one in a warehouse in your city arrives right away. Without edge, every request travels to a server in the US and back; with edge, it is answered in Ho Chi Minh City. Real example: Cloudflare has edge points in 348 cities, three in Vietnam. To run code in many places and stay light, Cloudflare uses isolates: a ready hotel room instead of building a new house for every guest.</p>
   </aside>
 </section>
 
