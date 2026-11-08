@@ -1,87 +1,108 @@
-# Demo: Event-driven Clickstream Pipeline với Cloudflare Workers
+# Edge Clickstream: Event-driven Pipeline trên Cloudflare
 
-Demo cho Slide 14 – mô phỏng website bán hàng: người dùng click → sự kiện được bắt tại edge → hàng đợi → xử lý → lưu trữ → dashboard real-time, đặt cạnh một job **batch** (cron 2 phút) để so sánh.
+Pipeline xử lý clickstream hướng sự kiện, chạy hoàn toàn serverless tại edge: sự kiện click được thu tại data center gần người dùng nhất, đi qua hàng đợi, được tổng hợp liên tục và hiển thị real-time. Một job **batch** chạy song song trên cùng dữ liệu để so sánh hai mô hình.
+
+## Kiến trúc tổng quan
 
 ```
-[simulator.js] ─┐
-                ├─► Worker /event ──► Queue ──► consumer ──► D1 ──► /dashboard (poll 1s)
-[Điện thoại SV] ┘   validate, country,           cộng dồn         real-time vs batch
-   (quét QR)        colo, lọc bot                bảng tổng hợp
-                        │                                   ▲
-                        └─► console.log → wrangler tail     │
-                                          cron */2 phút ────┘ (batch: quét lại toàn bộ events)
+ Nguồn sự kiện             Edge (Worker)              Đệm              Xử lý               Lưu trữ (D1)          Phục vụ
+┌──────────────┐     ┌──────────────────────┐   ┌──────────────┐   ┌───────────────┐   ┌──────────────────┐   ┌────────────────┐
+│ Trình duyệt  │     │ POST /event          │   │ Cloudflare   │   │ queue()       │   │ events (thô)     │   │ GET /stats     │
+│ (trang shop) ├────►│ GET  /ping           ├──►│ Queue        ├──►│ consumer      ├──►│ page_counts      ├──►│ GET /dashboard │
+│ Simulator    │     │ validate, enrich,    │   │ click-events │   │ cộng dồn      │   │ country_counts   │   │ (poll 1 s)     │
+│ Globalping   │     │ lọc bot              │   │ lô ≤20 / 1 s │   │ theo lô       │   │ per_second       │   └────────────────┘
+└──────────────┘     └──────────┬───────────┘   └──────────────┘   └───────────────┘   │ counters         │
+                                │ fallback: ghi thẳng D1 khi Queue lỗi                 │                  │
+                                └─────────────────────────────────────────────────────►│ batch_snapshot ◄─┼── scheduled()
+                                                                                       │ batch_runs       │   cron */2 phút
+                                                                                       └──────────────────┘   quét lại events
 ```
+
+Toàn bộ hệ thống là **một Worker** với ba entry point, mỗi entry point ứng với một tầng của pipeline:
+
+| Entry point | Kích hoạt bởi | Vai trò |
+|---|---|---|
+| `fetch` | HTTP request | Edge ingest + API + phục vụ trang |
+| `queue` | Cloudflare Queues | Consumer: xử lý và tổng hợp theo lô |
+| `scheduled` | Cron `*/2 * * * *` | Batch job truyền thống để đối chiếu |
+
+## Các tầng
+
+### 1. Edge ingest (`fetch` → `/event`, `/ping`)
+
+Worker chạy trên mạng anycast của Cloudflare, nên mỗi request được xử lý tại data center gần người gửi nhất (không có vùng trung tâm).
+
+- **Validate:** `type ∈ {click, view, add_to_cart}`, `page` bắt đầu bằng `/`, `userId` 1–64 ký tự; sai thì trả `400` ngay tại edge.
+- **Enrich:** gắn `country` và `colo` (mã data center) từ `request.cf`, cùng `receivedAt`.
+- **Lọc bot:** cửa sổ trượt theo `userId` (quá 10 sự kiện / 5 s bị đánh dấu `isBot`). Trạng thái nằm trong bộ nhớ của từng isolate nên chỉ là best-effort; lọc chính xác toàn cục cần Durable Objects.
+- **Publish:** `EVENTS_QUEUE.send(event)` rồi mới trả `ok`, nên client chỉ nhận xác nhận khi sự kiện đã vào hàng đợi.
+- **Fallback:** nếu Queue không khả dụng, sự kiện được ghi thẳng vào D1 qua `ctx.waitUntil`, response mang `via: "direct"`.
+
+`/ping` dùng chung đường ingest nhưng nhận tham số qua GET, cho các probe đo lường toàn cầu (Globalping) chỉ gửi được GET.
+
+### 2. Hàng đợi (Cloudflare Queues)
+
+Queue `click-events` tách tầng thu nhận khỏi tầng ghi dữ liệu: edge trả lời nhanh bất kể database đang tải thế nào, và các đợt tăng đột biến được hấp thụ ở hàng đợi.
+
+- Consumer nhận lô tối đa **20 sự kiện** hoặc sau **1 giây** (`max_batch_size`, `max_batch_timeout`). Đây là điểm đánh đổi giữa độ trễ và số lần ghi DB; độ trễ edge → database đo được khoảng 1–2 s chủ yếu đến từ đây.
+- Giao nhận **at-least-once**: consumer lỗi thì Queue retry. Khi retry, bảng tổng hợp có thể bị cộng trùng; muốn exactly-once cần idempotency key.
+
+### 3. Xử lý streaming (`queue`)
+
+Với mỗi lô, consumer gom số đếm trong bộ nhớ rồi ghi một lần bằng `DB.batch()`:
+
+- `INSERT` từng sự kiện vào `events` (dữ liệu thô, kèm `received_ms` và `stored_ms` để đo độ trễ pipeline).
+- `UPSERT ... count = count + excluded.count` vào các bảng tổng hợp: theo trang, theo quốc gia, theo giây, và bộ đếm tổng / bot.
+- Dọn `per_second` cũ hơn 120 s.
+
+Chi phí mỗi lô nhỏ và cố định (tỉ lệ với kích thước lô), không phụ thuộc tổng lượng dữ liệu đã có.
+
+### 4. Batch đối chiếu (`scheduled`)
+
+Cron mỗi 2 phút xoá `batch_snapshot` rồi tính lại bằng `SELECT page, COUNT(*) FROM events GROUP BY page`. Kết quả chỉ cập nhật theo chu kỳ, và chi phí tăng theo kích thước bảng `events`. Dashboard đặt hai con số cạnh nhau để thấy khoảng trễ giữa streaming và batch.
+
+### 5. Lưu trữ (D1)
+
+| Bảng | Loại | Cập nhật bởi |
+|---|---|---|
+| `events` | Dữ liệu thô | Consumer (hoặc fallback) |
+| `page_counts`, `country_counts`, `per_second`, `counters` | Tổng hợp streaming | Consumer, cộng dồn |
+| `batch_snapshot`, `batch_runs` | Tổng hợp batch | Cron, tính lại toàn bộ |
+
+Schema: [`worker/schema.sql`](worker/schema.sql).
+
+### 6. Phục vụ (`/stats`, `/dashboard`)
+
+`/stats` đọc toàn bộ số liệu trong một `DB.batch()` (7 truy vấn) và tính độ trễ pipeline trung bình từ 12 sự kiện gần nhất. Dashboard poll `/stats` mỗi giây.
+
+## API
 
 | Route | Chức năng |
 |---|---|
-| `GET /` | Trang shop "Flash Sale 11/11" để cả lớp quét QR và bấm |
-| `POST /event` | Edge ingest: validate, gắn `country`, `colo`, `receivedAt`, lọc bot |
-| `GET /ping?page=…` | Như `/event` nhưng dùng GET, cho probe Globalping (`simulator.js --global`) |
-| `GET /dashboard` | Dashboard chiếu lên màn hình |
-| `GET /stats` | API số liệu cho dashboard |
-| `GET /batch?key=…` | Chạy job batch ngay (không cần chờ cron) |
-| `GET /reset?key=…` | Xoá toàn bộ dữ liệu trước buổi demo |
+| `GET /` | Trang shop phát sinh sự kiện |
+| `POST /event` | Ingest một sự kiện `{ type, page, userId, sentAt? }` |
+| `GET /ping?page=&userId=&type=` | Ingest qua GET |
+| `GET /stats` | Số liệu tổng hợp (JSON) |
+| `GET /dashboard` | Dashboard real-time vs batch |
+| `GET /batch?key=` | Chạy batch job ngay |
+| `GET /reset?key=` | Xoá toàn bộ dữ liệu |
 
-## Deploy lên Cloudflare
+`key` là secret `RESET_KEY` của Worker.
 
-Xem [deploy.md](deploy.md). Đã deploy rồi thì cập nhật code chỉ cần `cd worker && npm run deploy`.
-
-## Chạy local (dự phòng khi mất mạng)
-
-```bash
-cd worker
-npm run db:init:local
-npm run dev                             # http://localhost:8787/dashboard
-# terminal khác:
-node simulator/simulator.js http://localhost:8787
-```
-
-Ở local, cron không tự chạy → gọi `http://localhost:8787/batch?key=demo123` hoặc `/__scheduled`.
-
-## Kịch bản trên lớp (~4 phút)
-
-Chuẩn bị: `GET /reset?key=…`, mở `/dashboard` toàn màn hình, một terminal chạy `npm run tail` (trong `worker/`).
-
-1. **Edge ingest** – chạy `node simulator/simulator.js <URL>`. Log JSON chạy trong `wrangler tail`; chỉ vào `country`, `colo` (ví dụ `SIN`/`HKG`): request được xử lý tại node gần nhất, không về data center trung tâm.
-2. **Real-time vs batch** – cột xanh nhảy liên tục, cột cam đứng yên đến khi cron chạy (đếm ngược ở dưới). Nhắc lại câu chuyện giao dịch lúc 2h sáng ở Slide 3.
-3. **Cả lớp tham gia** – chiếu QR, mọi người bấm "Mua ngay": đồ thị lưu lượng vọt lên, Worker tự scale, không cần cấu hình gì.
-4. **Lọc bot tại edge** – `node simulator/simulator.js <URL> --spam`: ô "bot bị lọc" tăng, feed hiện dòng đỏ.
-5. **Phân tán toàn cầu** – `node simulator/simulator.js <URL> --global`: 12 probe ở 12 nước gọi `/ping`, mỗi nơi do data center gần nhất xử lý (FRA, NRT, GRU, SIN...). Cùng một Worker, không cấu hình vùng.
-6. **Độ trễ pipeline** – ô "edge → database" khoảng 1–2 giây, chủ yếu do Queue gom lô (`max_batch_timeout = 1`): đánh đổi giữa độ trễ và hiệu quả ghi.
-
-Quay sẵn video các bước trên để dự phòng.
-
-## Video demo tự động (giọng của bạn)
-
-```bash
-cd video
-npm install
-npm run voice      # ghi âm 29 câu lời thoại, từng câu một (Enter bắt đầu / Enter dừng, r = ghi lại)
-npm run record     # tự chạy Worker + simulator, quay màn hình, ghép giọng → out/demo.mp4 (~3,5 phút)
-```
-
-- Lời thoại và hành động từng cảnh nằm trong `video/scenes.js`. Sửa câu nào thì ghi lại câu đó: `node voice.js s07`.
-- Câu nào chưa ghi âm thì dùng giọng AI tiếng Việt (nếu đã cấu hình `video/.env`, xem dưới), không thì giọng máy macOS (Linh). Video tự căn theo độ dài từng câu.
-- **Giọng AI tự nhiên hơn:** `cp .env.example .env`, điền API key của FPT.AI, Azure hoặc Google, rồi `npm run tts:test` để nghe thử câu đầu (`npm run tts:test -- s18` cho câu khác). Ưng giọng rồi thì `npm run record`. Toàn bộ lời thoại khoảng 2.600 ký tự, nằm trong hạn mức miễn phí của cả 3 dịch vụ.
-- Kết quả trong `video/out/`: `demo.mp4`, `demo_silent.mp4` (không tiếng), `demo.srt` (phụ đề), `script.md` (kịch bản kèm mốc thời gian).
-- Lần đầu ghi âm, macOS sẽ hỏi quyền Microphone cho Terminal/VS Code. Micro được tự chọn là "MacBook Pro Microphone"; muốn đổi: `MIC="Tên micro" npm run voice`.
-
-## Điểm nói thêm khi bị hỏi (nối với Slide 12)
-
-- **Edge lỗi giữa chừng có mất sự kiện không?** Worker chỉ trả `ok` sau khi `EVENTS_QUEUE.send()` thành công; consumer lỗi thì Queue tự retry.
-- **Exactly-once:** Queue giao *at-least-once* → khi retry, bảng tổng hợp có thể bị cộng trùng. Muốn chuẩn cần idempotency key.
-- **Stateless:** bộ lọc bot nhớ trong RAM của một isolate, nên chỉ là best-effort. Bản chuẩn dùng Durable Objects (Slide 15).
-- **Streaming vs batch trong code:** consumer *cộng dồn* vào `page_counts` (chi phí nhỏ, cố định); batch job *quét lại toàn bộ* `events` mỗi lần chạy.
-- **Giới hạn gói Free:** D1 khoảng 100k dòng ghi/ngày, mỗi lô sự kiện ghi ~5–10 dòng. Tập dượt vài lần vẫn dư, nhưng đừng để simulator chạy cả ngày.
-
-## Cấu trúc
+## Mã nguồn
 
 ```
 worker/
-  wrangler.toml     # bindings D1, Queue, cron
-  schema.sql        # bảng events + các bảng tổng hợp + batch
-  src/index.js      # fetch (ingest/API), queue (consumer), scheduled (batch)
-  src/pages.js      # HTML trang shop + dashboard
+  wrangler.toml     bindings: D1 (DB), Queue producer/consumer (EVENTS_QUEUE), cron
+  schema.sql        bảng thô + bảng tổng hợp streaming + bảng batch
+  src/index.js      fetch (ingest, API), queue (consumer), scheduled (batch)
+  src/pages.js      HTML trang shop + dashboard
 simulator/
-  simulator.js      # giả lập click, --interval, --users, --spam
+  simulator.js      nguồn sự kiện giả lập: luồng đều, burst, bot, probe toàn cầu
+video/              công cụ quay video demo tự động
 ```
+
+## Chạy
+
+- Deploy lên Cloudflare: [deploy.md](deploy.md)
+- Các lệnh chạy demo và chạy local: [demo.md](demo.md)
