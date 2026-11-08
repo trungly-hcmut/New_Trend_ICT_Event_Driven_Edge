@@ -22,21 +22,9 @@ Demo cho Slide 14 – mô phỏng website bán hàng: người dùng click → s
 | `GET /batch?key=…` | Chạy job batch ngay (không cần chờ cron) |
 | `GET /reset?key=…` | Xoá toàn bộ dữ liệu trước buổi demo |
 
-## Cài đặt & deploy (làm 1 lần)
+## Deploy lên Cloudflare
 
-```bash
-cd worker
-npm install
-npx wrangler login                      # đăng nhập Cloudflare
-npx wrangler d1 create clickstream      # copy database_id vào wrangler.toml
-npx wrangler queues create click-events
-npm run db:init:remote                  # tạo bảng trên D1 thật
-npm run deploy                          # in ra URL https://edge-clickstream.<subdomain>.workers.dev
-```
-
-Nên đổi `RESET_KEY` trong `wrangler.toml` trước khi deploy.
-
-Nếu tài khoản không tạo được Queue: xoá 2 khối `[[queues.*]]` trong `wrangler.toml`, Worker sẽ tự ghi thẳng vào D1 (không cần sửa code).
+Xem [deploy.md](deploy.md). Đã deploy rồi thì cập nhật code chỉ cần `cd worker && npm run deploy`.
 
 ## Chạy local (dự phòng khi mất mạng)
 
